@@ -30,33 +30,44 @@
     }
 </script>
 
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Login</h1>
+        
+        {#if error}
+            <p class="text-red-500 text-sm mb-4 text-center">{error}</p>
+        {/if}
 
-<div class="container">
-    <h1>Login</h1>
-    {#if error}
-        <p class="error">{error}</p>
-    {/if}
-    <form on:submit|preventDefault={handleLogin}>
-        <input type="email" bind:value={email} placeholder="Email" required />
-        <input type="password" bind:value={password} placeholder="Password" required />
-        <button type="submit">Login</button>
-    </form>
-    <p>Don't have an account? <a href="/register">Register</a></p>
+        <form on:submit|preventDefault={handleLogin} class="space-y-6">
+            <div>
+                <input 
+                    type="email" 
+                    bind:value={email} 
+                    placeholder="Email" 
+                    required 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+            </div>
+            <div>
+                <input 
+                    type="password" 
+                    bind:value={password} 
+                    placeholder="Password" 
+                    required 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+            </div>
+            <button 
+                type="submit" 
+                class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-semibold"
+            >
+                Login
+            </button>
+        </form>
+
+        <p class="mt-4 text-center text-gray-600">
+            Don't have an account? 
+            <a href="/register" class="text-blue-600 hover:underline">Register</a>
+        </p>
+    </div>
 </div>
-
-<style>
-    .container {
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
-    input {
-        display: block;
-        width: 100%;
-        margin: 1rem 0;
-        padding: 0.5rem;
-    }
-    .error {
-        color: red;
-    }
-</style>

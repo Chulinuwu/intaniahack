@@ -3,6 +3,7 @@
     import { goto } from '$app/navigation';
     import { browser } from '$app/environment';
     import { token } from '$lib/auth';
+	import '../app.css'
 
     onMount(() => {
         if (browser) {

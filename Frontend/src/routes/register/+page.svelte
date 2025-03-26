@@ -1,4 +1,3 @@
-<!-- src/routes/register/+page.svelte -->
 <script>
     import { goto } from '$app/navigation';
 
@@ -25,40 +24,58 @@
 
             goto('/login');
         } catch (err) {
-            error = (err instanceof Error) ? err.message : 'An unknown error occurred';
+            error = err instanceof Error ? err.message : 'An unknown error occurred';
         }
     }
 </script>
 
-<div class="container">
-    <h1>Register</h1>
-    {#if error}
-        <p class="error">{error}</p>
-    {/if}
-    <form on:submit|preventDefault={handleRegister}>
-        <input type="email" bind:value={email} placeholder="Email" required />
-        <input type="text" bind:value={username} placeholder="Username" required />
-        <input type="password" bind:value={password} placeholder="Password" required />
-        <button type="submit">Register</button>
-    </form>
-    <p>Already have an account? <a href="/login">Login</a></p>
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Register</h1>
+        
+        {#if error}
+            <p class="text-red-500 text-sm mb-4 text-center">{error}</p>
+        {/if}
+
+        <form on:submit|preventDefault={handleRegister} class="space-y-6">
+            <div>
+                <input 
+                    type="email" 
+                    bind:value={email} 
+                    placeholder="Email" 
+                    required 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+            </div>
+            <div>
+                <input 
+                    type="text" 
+                    bind:value={username} 
+                    placeholder="Username" 
+                    required 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+            </div>
+            <div>
+                <input 
+                    type="password" 
+                    bind:value={password} 
+                    placeholder="Password" 
+                    required 
+                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                />
+            </div>
+            <button 
+                type="submit" 
+                class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition duration-300 font-semibold"
+            >
+                Register
+            </button>
+        </form>
+
+        <p class="mt-4 text-center text-gray-600">
+            Already have an account? 
+            <a href="/login" class="text-blue-600 hover:underline">Login</a>
+        </p>
+    </div>
 </div>
-
-<!-- Style เดิม -->
-
-<style>
-    .container {
-        max-width: 400px;
-        margin: 0 auto;
-        padding: 2rem;
-    }
-    input {
-        display: block;
-        width: 100%;
-        margin: 1rem 0;
-        padding: 0.5rem;
-    }
-    .error {
-        color: red;
-    }
-</style>
