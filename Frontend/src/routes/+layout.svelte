@@ -1,6 +1,22 @@
-<script lang="ts">
-	import '../app.css';
-	let { children } = $props();
+<script>
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+    import { browser } from '$app/environment';
+    import { token } from '$lib/auth';
+
+    onMount(() => {
+        if (browser) {
+            const pathname = window.location.pathname;
+            if (!$token && pathname !== '/login' && pathname !== '/register') {
+                goto('/login');
+            }
+        }
+    });
+
+    // reactive statement สำหรับ client-side changes
+    $: if (browser && !$token && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+        goto('/login');
+    }
 </script>
 
-{@render children()}
+<slot />
