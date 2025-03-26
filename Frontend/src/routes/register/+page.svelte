@@ -1,7 +1,9 @@
+<!-- src/routes/register/+page.svelte -->
 <script>
     import { goto } from '$app/navigation';
 
     let email = '';
+    let username = '';
     let password = '';
     let error = '';
 
@@ -12,18 +14,18 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, username, password })
             });
 
             const data = await response.json();
             
             if (!response.ok) {
-                throw new Error(data.message || 'Registration failed');
+                throw new Error(data.error || 'Registration failed');
             }
 
             goto('/login');
         } catch (err) {
-            error = err instanceof Error ? err.message : 'An unknown error occurred';
+            error = (err instanceof Error) ? err.message : 'An unknown error occurred';
         }
     }
 </script>
@@ -35,11 +37,14 @@
     {/if}
     <form on:submit|preventDefault={handleRegister}>
         <input type="email" bind:value={email} placeholder="Email" required />
+        <input type="text" bind:value={username} placeholder="Username" required />
         <input type="password" bind:value={password} placeholder="Password" required />
         <button type="submit">Register</button>
     </form>
     <p>Already have an account? <a href="/login">Login</a></p>
 </div>
+
+<!-- Style เดิม -->
 
 <style>
     .container {
