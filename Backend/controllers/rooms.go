@@ -310,7 +310,8 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 					HandlePlayerChoice(room, msgData.PlayerIndex, msgData.ChoiceID, msgData.EventID)
 
 					// Check if this completes a round of turns
-					checkAgeProgression(room)
+
+					checkAgeProgression(room, msgData.PlayerIndex)
 
 					// Schedule the next turn
 					nextPlayerIndex := (msgData.PlayerIndex + 1) % (len(room.Players) + 1) // +1 for host
