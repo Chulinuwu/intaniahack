@@ -292,6 +292,8 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 				HandlePlayerChoice(room, msgData.PlayerIndex, msgData.ChoiceID, msgData.EventID)
 				continue
 			}
+		} else {
+			fmt.Println("Error parsing message:", err)
 		}
 
 		broadcast(roomID, message, conn)
