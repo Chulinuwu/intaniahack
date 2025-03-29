@@ -67,7 +67,7 @@ func InitGameSession(roomID string, playerNames []string) *models.GameState {
 func HandleStartGame(roomID string, room *models.Room) {
 	roomsMutex.Lock()
 	playerNames := getPlayersList(room)
-	fmt.Println("Player names:", playerNames)
+	// fmt.Println("Player names:", playerNames)
 	roomsMutex.Unlock()
 
 	// Initialize game events if not already initialized
@@ -107,21 +107,21 @@ func startPlayerTurn(room *models.Room, playerIndex int) {
 		}
 	}()
 
-	fmt.Println("ENTERING startPlayerTurn for player:", playerIndex)
+	// fmt.Println("ENTERING startPlayerTurn for player:", playerIndex)
 
 	if room == nil {
-		fmt.Println("Error: Room is nil in startPlayerTurn")
+		// fmt.Println("Error: Room is nil in startPlayerTurn")
 		return
 	}
 
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
-	fmt.Println("Starting turn for player index:", playerIndex)
+	// fmt.Println("Starting turn for player index:", playerIndex)
 
 	// Safety check for total players
 	totalPlayers := len(room.Players) + 1 // +1 for host
-	fmt.Println("Total players:", totalPlayers)
+	// fmt.Println("Total players:", totalPlayers)
 
 	if playerIndex >= totalPlayers {
 		fmt.Println("Error: playerIndex out of bounds, resetting to 0")
@@ -212,19 +212,19 @@ func startPlayerTurn(room *models.Room, playerIndex int) {
 // HandlePlayerChoice processes a player's choice
 func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eventID string) {
 	if room == nil {
-		fmt.Println("Error: Room is nil in HandlePlayerChoice")
+		// fmt.Println("Error: Room is nil in HandlePlayerChoice")
 		return
 	}
 
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
-	fmt.Println("Handling player choice:", choiceID, eventID)
-	fmt.Println("Player index:", playerIndex)
+	// fmt.Println("Handling player choice:", choiceID, eventID)
+	// fmt.Println("Player index:", playerIndex)
 
 	gameState := room.GameState
 	if gameState == nil {
-		fmt.Println("Error: GameState is nil in HandlePlayerChoice")
+		// fmt.Println("Error: GameState is nil in HandlePlayerChoice")
 		return
 	}
 
@@ -254,8 +254,8 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 			}
 		}
 	}
-	fmt.Println("Current Event:", currentEvent)
-	fmt.Println("Found:", found)
+	// fmt.Println("Current Event:", currentEvent)
+	// fmt.Println("Found:", found)
 
 	if !found {
 		// Event not found, use a default effect
@@ -298,15 +298,15 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 }
 
 func scheduleNextTurn(room *models.Room, nextPlayerIndex int) {
-	fmt.Println("Scheduling next turn for player index:", nextPlayerIndex)
+	// fmt.Println("Scheduling next turn for player index:", nextPlayerIndex)
 	gameState := room.GameState
 	if nextPlayerIndex == 0 {
 		gameState.CurrentAge++
 	}
-	fmt.Println("nextPlayerIndex:", nextPlayerIndex)
-	fmt.Println("gameState.CurrentAge:", gameState.CurrentAge)
+	// fmt.Println("nextPlayerIndex:", nextPlayerIndex)
+	// fmt.Println("gameState.CurrentAge:", gameState.CurrentAge)
 	if gameState.CurrentAge == 7 && nextPlayerIndex == 0 {
-		fmt.Println("lingan guliguli")
+		// fmt.Println("lingan guliguli")
 		finalizeGame(room)
 		return
 	}
@@ -410,11 +410,11 @@ func checkAgeProgression(room *models.Room, playerIndex int) {
 
 	if gameState.CurrentTurn == 0 && gameState.CurrentAge != 0 {
 		// Move to the next age
-		fmt.Println("Blah Balh Balh")
-		fmt.Println("Current Age:", gameState.CurrentAge)
-		fmt.Println("Current Turn:", gameState.CurrentTurn)
+		// fmt.Println("Blah Balh Balh")
+		// fmt.Println("Current Age:", gameState.CurrentAge)
+		// fmt.Println("Current Turn:", gameState.CurrentTurn)
 		if gameState.CurrentAge < 6 { // 0-6 are our 7 age ranges
-			fmt.Println("Bleh Belh Belh")
+			// fmt.Println("Bleh Belh Belh")
 			// Broadcast age advancement
 			message := gin.H{
 				"event":     "age_advanced",
