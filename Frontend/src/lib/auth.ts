@@ -35,3 +35,32 @@ if (browser) {
     const initialToken = getToken() ?? null;
     token.set(initialToken);
 }
+
+export function connectWebSocket(token: string, endpoint: any, roomId = '', onMessage: (arg0: any) => void) {
+    console.log(token);
+    const url = roomId 
+        ? `ws://${import.meta.env.VITE_API_URL}${endpoint}?room_id=${roomId}` 
+        : `ws://${import.meta.env.VITE_API_URL}${endpoint}`;
+    const ws = new WebSocket(url, ['json']);
+
+    ws.onopen = () => {
+        console.log('WebSocket connected');
+        // ส่ง token ใน header ไม่ได้กับ WebSocket ดังนั้นส่งในข้อความแรก
+        ws.send(JSON.stringify({ Authorization: `Bearer ${token}` }));
+    };
+
+    ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        onMessage(data);
+    };
+
+    ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
+
+    ws.onclose = () => {
+        console.log('WebSocket closed');
+    };
+
+    return ws;
+}
