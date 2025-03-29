@@ -34,4 +34,6 @@ func SetupRoutes(r *gin.Engine) {
     auth.GET("/users", controllers.GetUsers)
     auth.GET("/users/:id", controllers.GetUserByID)
     auth.DELETE("/users/:id", controllers.DeleteUser)
+
+    r.GET("/ws/:roomID", controllers.WebSocketHandler)
 }
