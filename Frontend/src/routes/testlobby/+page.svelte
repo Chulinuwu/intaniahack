@@ -1,26 +1,42 @@
-<script lang="ts">
+<script>
     import { onMount, onDestroy } from 'svelte';
     import { goto } from '$app/navigation';
     import { getToken, connectWebSocket } from '$lib/auth';
 
     let token = '';
-    let ws: WebSocket | null = null;
+    /**
+	 * @type {WebSocket | null}
+	 */
+    let ws = null;
     let roomId = '';
     let inputRoomId = '';
-    let players: string[] = [];
+    /**
+	 * @type {string | any[]}
+	 */
+    let players = [];
+    let host = '';
     let gameStatus = '';
     let error = '';
+    let currentUsername = '';
 
-    onMount(() => {
+    onMount(async () => {
         token = getToken() ?? '';
         if (!token) {
             goto('/login');
+            return;
         }
-        console.log(token);
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/me`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (response.ok) {
+            currentUsername = data.user.username;
+        }
     });
 
     function hostGame() {
-        if (ws) ws.close(); // ปิดการเชื่อมต่อเก่าถ้ามี
+        if (ws) ws.close();
         ws = connectWebSocket(token, '/host', '', handleMessage);
     }
 
@@ -29,11 +45,23 @@
             error = 'Please enter a room ID';
             return;
         }
-        if (ws) ws.close(); // ปิดการเชื่อมต่อเก่าถ้ามี
+        if (ws) ws.close();
         ws = connectWebSocket(token, '/join', inputRoomId, handleMessage);
     }
 
-    function handleMessage(data: { error?: string; room_id?: string; event?: string; players?: string[]; message?: string }) {
+    function startGame() {
+        if (currentUsername !== host) return;
+        // ส่งข้อความผ่าน WebSocket เพื่อแจ้งทุกคน
+        if (ws) {
+            ws.send(JSON.stringify({ event: "start_game", room_id: roomId }));
+        }
+        goto(`/testlobby/${roomId}`); // Host redirect ทันที
+    }
+
+    /**
+	 * @param {{ error: string; room_id: string; event: string; players: string | any[]; host: string; message: string; }} data
+	 */
+    function handleMessage(data) {
         console.log('Received:', data);
         if (data.error) {
             error = data.error;
@@ -43,13 +71,17 @@
             roomId = data.room_id;
         }
         if (data.event === 'player_list') {
-            players = data.players ?? [];
+            players = data.players;
+            host = data.host;
         }
         if (data.event === 'game_ready') {
-            gameStatus = data.message ?? '';
+            gameStatus = data.message;
         }
         if (data.event === 'game_not_ready') {
-            gameStatus = data.message ?? '';
+            gameStatus = data.message;
+        }
+        if (data.event === 'start_game') {
+            goto(`/testlobby/${data.room_id}`); // ทุกคน redirect เมื่อได้รับ event นี้
         }
     }
 
@@ -98,7 +130,7 @@
             <h3 class="mt-4 text-lg font-semibold text-gray-800">Players:</h3>
             <ul class="list-disc pl-5">
                 {#each players as player}
-                    <li>{player}</li>
+                    <li class:text-blue-600={player === host}>{player} {player === host ? '(Host)' : ''}</li>
                 {/each}
             </ul>
         {/if}
@@ -106,11 +138,24 @@
         {#if gameStatus}
             <p class="mt-4 text-gray-600 text-center">{gameStatus}</p>
         {/if}
+
+        {#if gameStatus==="Room is full. Game can start!" && currentUsername === host}
+            <button 
+                on:click={startGame} 
+                class="w-full mt-4 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition duration-300 font-semibold"
+            >
+                Start Game
+            </button>
+        {/if}
     </div>
 </div>
 
 <style>
     .space-y-4 > * + * {
         margin-top: 1rem;
+    }
+    .text-blue-600 {
+        color: #2563eb;
+        font-weight: bold;
     }
 </style>
