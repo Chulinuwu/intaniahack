@@ -299,6 +299,10 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 
 func scheduleNextTurn(room *models.Room, nextPlayerIndex int) {
 	fmt.Println("Scheduling next turn for player index:", nextPlayerIndex)
+	gameState := room.GameState
+	if nextPlayerIndex == 0 {
+		gameState.CurrentAge++
+	}
 	startPlayerTurn(room, nextPlayerIndex)
 }
 
@@ -373,7 +377,7 @@ func broadcastTurnResult(room *models.Room, gameState *models.GameState, playerI
 }
 
 // checkAgeProgression checks if all players have completed their turns and advances age if needed
-func checkAgeProgression(room *models.Room) {
+func checkAgeProgression(room *models.Room, playerIndex int) {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
@@ -390,11 +394,15 @@ func checkAgeProgression(room *models.Room) {
 	// If the current turn is back to player 0, we've completed a round
 	if gameState.CurrentAge == 0 && gameState.CurrentTurn == 1 {
 		// Reset all players' turns
+
 	}
-	if gameState.CurrentTurn == 0 {
+	// if gameState.CurrentTurn == 0 && playerIndex == 0 {
+	// 	gameState.CurrentAge++
+
+	// }
+	if gameState.CurrentTurn == 0 && gameState.CurrentAge != 0 {
 		// Move to the next age
 		if gameState.CurrentAge < 6 { // 0-6 are our 7 age ranges
-			gameState.CurrentAge++
 
 			// Broadcast age advancement
 			message := gin.H{
