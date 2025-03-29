@@ -39,8 +39,8 @@ if (browser) {
 export function connectWebSocket(token: string, endpoint: any, roomId = '', onMessage: (arg0: any) => void) {
     console.log(token);
     const url = roomId 
-        ? `ws://localhost:8080${endpoint}?room_id=${roomId}` 
-        : `ws://localhost:8080${endpoint}`;
+        ? `ws://${import.meta.env.VITE_API_URL}${endpoint}?room_id=${roomId}` 
+        : `ws://${import.meta.env.VITE_API_URL}${endpoint}`;
     const ws = new WebSocket(url, ['json']);
 
     ws.onopen = () => {
