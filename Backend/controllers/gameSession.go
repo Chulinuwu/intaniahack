@@ -164,6 +164,8 @@ func startPlayerTurn(room *models.Room, playerIndex int) {
 func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eventID string) {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
+	fmt.Println("Handling player choice:", choiceID, eventID)
+	fmt.Println("Player index:", playerIndex)
 
 	gameState := room.GameState
 	if gameState == nil {
