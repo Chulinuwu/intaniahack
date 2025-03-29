@@ -26,7 +26,7 @@
             return;
         }
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/me`, {
+        const response = await fetch(`http://${import.meta.env.VITE_API_URL}/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await response.json();
