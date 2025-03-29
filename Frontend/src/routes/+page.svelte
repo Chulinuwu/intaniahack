@@ -31,6 +31,7 @@
             username = data.user.username;
             email = data.user.email;
             isAuthenticated = true;
+            goto('/home');
         } catch (err) {
             error = err instanceof Error ? err.message : 'An unknown error occurred';
             removeToken();
@@ -41,7 +42,9 @@
         removeToken();
         goto('/login');
     }
-
+    function goHome() {
+        goto('/home');
+    }
     function goToLogin() {
         goto('/login');
     }
@@ -60,18 +63,8 @@
         <div class=" px-10 py-8 rounded-md shadow-xl relative w-full max-w-md border">
           
          
-      
           {#if isAuthenticated}
-            <h1 class="text-3xl font-bold text-white mb-4 text-center">
-                Welcome, {username}
-            </h1>
-            <p class="text-gray-300 mb-6 text-center">Email: {email}</p>
-            <button 
-                on:click={handleLogout} 
-                class="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 transition duration-300 font-semibold"
-            >
-                Logout
-            </button>
+            {goto('/home')}
           {:else}
             <h1 class="text-3xl font-bold text-white mb-6 text-center">
                 BANGKOKLIFE
