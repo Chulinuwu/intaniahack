@@ -1,32 +1,56 @@
 <script>
     import { goto } from '$app/navigation';
     import bg from '$lib/assets/image/bg.gif';
+    import { setToken } from '$lib/auth';
     let email = '';
     let username = '';
     let password = '';
     let error = '';
-
-    async function handleRegister() {
+    async function handleLogin() {
         try {
             const response = await fetch(`http://${import.meta.env.VITE_API_URL}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ email, username, password })
+                body: JSON.stringify({ email, password })
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Registration failed');
+                throw new Error(data.error || 'Login failed');
             }
 
-            goto('/login');
+            setToken(data.token);
+            goto('/');
         } catch (err) {
             error = err instanceof Error ? err.message : 'An unknown error occurred';
         }
     }
+    async function handleRegister() {
+    try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, username, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Registration failed');
+        }
+
+        // Auto login after successful registration
+        await handleLogin();
+    } catch (err) {
+        error = err instanceof Error ? err.message : 'An unknown error occurred';
+    }
+}
+
 </script>
 
 <style>
@@ -48,7 +72,7 @@
       
           <form on:submit|preventDefault={handleRegister} class="space-y-6">
             <div>
-              <label for="email" class="block text-lg font-semibold tracking-wide mb-1">Email</label>
+              <label for="email" class="block text-lg tracking-[3px] mb-1">Email</label>
               <input 
                 id="email"
                 type="email" 
@@ -59,7 +83,7 @@
             </div>
 
             <div>
-              <label for="username" class="block text-lg font-semibold tracking-wide mb-1">Username</label>
+              <label for="username" class="block text-lg tracking-[3px] mb-1">Username</label>
               <input 
                 id="username"
                 type="text" 
@@ -70,7 +94,7 @@
             </div>
       
             <div>
-              <label for="password" class="block text-lg font-semibold tracking-wide mb-1">Password</label>
+              <label for="password" class="block text-lg tracking-[3px] mb-1">Password</label>
               <input 
                 id="password"
                 type="password" 

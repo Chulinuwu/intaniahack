@@ -16,7 +16,7 @@
         if (browser) {
             const pathname = window.location.pathname;
             if (!$token && pathname !== '/login' && pathname !== '/register') {
-                goto('/');
+                goto('/home');
             }
         }
         
@@ -31,7 +31,7 @@
 
     // reactive statement สำหรับ client-side changes
     $: if (browser && !$token && window.location.pathname !== '/login' && window.location.pathname !== '/register') {
-        goto('/');
+        goto('/home');
     }
 </script>
 
