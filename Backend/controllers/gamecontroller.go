@@ -18,6 +18,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		return true
 	},
+	Subprotocols: []string{"json"},
 }
 
 // Host สร้างห้องใหม่
@@ -25,6 +26,14 @@ func HostGame(c *gin.Context) {
     conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
     if err != nil {
         fmt.Println("WebSocket Upgrade Error:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "WebSocket Upgrade Error"})
+        return
+    }
+
+	tokenString := c.GetHeader("Authorization")
+    if tokenString == "" {
+        conn.Close()
+        c.JSON(http.StatusUnauthorized, gin.H{"error": "Token missing"})
         return
     }
 
