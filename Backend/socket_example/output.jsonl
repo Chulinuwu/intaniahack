@@ -1,0 +1,123 @@
+{
+    "age_ranges": [
+        {
+            "Label": "0 - 12",
+            "MinAge": 0,
+            "MaxAge": 12,
+            "Description": "Childhood"
+        },
+        {
+            "Label": "13 - 18",
+            "MinAge": 13,
+            "MaxAge": 18,
+            "Description": "Adolescence"
+        },
+        {
+            "Label": "19 - 22",
+            "MinAge": 19,
+            "MaxAge": 22,
+            "Description": "Early Adulthood"
+        },
+        {
+            "Label": "23 - 39",
+            "MinAge": 23,
+            "MaxAge": 39,
+            "Description": "Adulthood"
+        },
+        {
+            "Label": "40 - 59",
+            "MinAge": 40,
+            "MaxAge": 59,
+            "Description": "Middle Age"
+        },
+        {
+            "Label": "60 - 79",
+            "MinAge": 60,
+            "MaxAge": 79,
+            "Description": "Senior Years"
+        },
+        {
+            "Label": "80 - 100",
+            "MinAge": 80,
+            "MaxAge": 100,
+            "Description": "Golden Years"
+        }
+    ],
+    "current_age": 0,
+    "current_turn": 0,
+    "event": "game_initialized",
+    "game_id": "2UZRDRTO23",
+    "players": [
+        {
+            "current_age": 0,
+            "happiness": 50,
+            "is_turn": true,
+            "knowledge": 50,
+            "money": 50,
+            "profile_image": "https://api.dicebear.com/7.x/bottts/svg?seed=user",
+            "relationship": 50,
+            "username": "user"
+        },
+        {
+            "current_age": 0,
+            "happiness": 50,
+            "is_turn": false,
+            "knowledge": 50,
+            "money": 50,
+            "profile_image": "https://api.dicebear.com/7.x/bottts/svg?seed=sa",
+            "relationship": 50,
+            "username": "sa"
+        },
+        {
+            "current_age": 0,
+            "happiness": 50,
+            "is_turn": false,
+            "knowledge": 50,
+            "money": 50,
+            "profile_image": "https://api.dicebear.com/7.x/bottts/svg?seed=sa",
+            "relationship": 50,
+            "username": "sa"
+        }
+    ]
+}
+{
+    "event": "turn_start",
+    "event_data": {
+        "ID": "age0_1",
+        "Type": "positive",
+        "Title": "First Day of School",
+        "Description": "You're starting elementary school for the first time!",
+        "AgeIndex": 0,
+        "Effects": [
+            {
+                "Stat": "knowledge",
+                "Value": 5
+            },
+            {
+                "Stat": "happiness",
+                "Value": 3
+            }
+        ],
+        "Choices": null
+    },
+    "player_index": 0,
+    "player_name": "user"
+}
+
+{
+    "event": "turn_result",
+    "life_event": {
+        "choice_made": "",
+        "description": "",
+        "title": "",
+        "type": ""
+    },
+    "player_index": 0,
+    "player_name": "user",
+    "player_stats": {
+        "happiness": 52,
+        "knowledge": 50,
+        "money": 50,
+        "relationship": 50
+    }
+}

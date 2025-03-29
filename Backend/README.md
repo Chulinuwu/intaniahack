@@ -1,5 +1,5 @@
 ## dev mode
-`air -c .air.toml` to start the server in dev mode
+`air -d -c .air.toml` to start the server in dev mode
 
 ## prod mode
 `go run main.go` to start the server in prod mode
