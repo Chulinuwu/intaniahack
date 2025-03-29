@@ -16,6 +16,7 @@ import (
 
 var rooms = make(map[string]*models.Room) // เก็บข้อมูลห้องที่สร้าง
 var roomsMutex sync.Mutex                 // ป้องกันปัญหาการเข้าถึงข้อมูลพร้อมกัน
+const MAX_PLAYERS = 3
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -154,7 +155,7 @@ func JoinGame(c *gin.Context) {
 
 	room.Mutex.Lock()
 	totalPlayers := len(room.Players) + 1
-	if totalPlayers >= 3 {
+	if totalPlayers >= MAX_PLAYERS {
 		conn.WriteJSON(gin.H{"error": "Room is full (max 3 players)"})
 		conn.Close()
 		room.Mutex.Unlock()
@@ -171,7 +172,7 @@ func JoinGame(c *gin.Context) {
 	playersList := getPlayersList(room)
 	broadcastPlayerList(roomID, playersList, nil)
 
-	if totalPlayers == 3 {
+	if totalPlayers == MAX_PLAYERS {
 		broadcastStartGame(roomID)
 	}
 
@@ -258,6 +259,7 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 
 	for {
 		_, message, err := conn.ReadMessage()
+		fmt.Println("Received message:", string(message))
 		if err != nil {
 			fmt.Println("WebSocket Read Error:", err)
 			break
@@ -265,12 +267,29 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 
 		// Parse ข้อความเพื่อตรวจสอบ event
 		var msgData struct {
-			Event  string `json:"event"`
-			RoomID string `json:"room_id"`
+			Event       string `json:"event"`
+			RoomID      string `json:"room_id"`
+			EventID     string `json:"event_id"`
+			ChoiceID    string `json:"choice_id"`
+			PlayerIndex int    `json:"player_index"`
 		}
 		if err := json.Unmarshal(message, &msgData); err == nil {
-			if msgData.Event == "start_game" {
-				broadcast(roomID, message, conn) // ส่งต่อ start_game ไปยังทุกคน
+			// Get the room
+			roomsMutex.Lock()
+			room, exists := rooms[roomID]
+			roomsMutex.Unlock()
+			if !exists {
+				continue
+			}
+
+			// Handle different event types
+			switch msgData.Event {
+			case "start_game":
+				HandleStartGame(roomID, room)
+				continue
+
+			case "make_choice":
+				HandlePlayerChoice(room, msgData.PlayerIndex, msgData.ChoiceID, msgData.EventID)
 				continue
 			}
 		}
@@ -291,6 +310,7 @@ func broadcast(roomID string, message []byte, sender *websocket.Conn) {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
+	// Send to all players except the sender
 	for _, peer := range room.Players {
 		if peer != sender {
 			peer.WriteMessage(websocket.TextMessage, message)
@@ -310,6 +330,24 @@ func removeConnection(roomID string, conn *websocket.Conn) {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
+	// Check if this is the host
+	if room.Host == conn {
+		// If host disconnects, close the room and notify all players
+		for _, peer := range room.Players {
+			peer.WriteJSON(gin.H{
+				"event":   "host_disconnected",
+				"message": "Host has disconnected. The game has ended.",
+			})
+		}
+
+		// Remove room from the map
+		roomsMutex.Lock()
+		delete(rooms, roomID)
+		roomsMutex.Unlock()
+		return
+	}
+
+	// Otherwise, this is a player leaving
 	newPlayers := []*websocket.Conn{}
 	for _, peer := range room.Players {
 		if peer != conn {
@@ -318,6 +356,30 @@ func removeConnection(roomID string, conn *websocket.Conn) {
 	}
 	room.Players = newPlayers
 
-	// ลบ username ออกจาก PlayerNames เมื่อผู้เล่นออก
+	// Get the username of the disconnected player
+	username, exists := room.PlayerNames[conn]
+
+	// Remove player from the map
+	fmt.Println("Player disconnected:", username)
 	delete(room.PlayerNames, conn)
+
+	// Notify remaining players
+	if exists {
+		message := gin.H{
+			"event":    "player_disconnected",
+			"username": username,
+		}
+
+		// Notify host
+		room.Host.WriteJSON(message)
+
+		// Notify other players
+		for _, peer := range room.Players {
+			peer.WriteJSON(message)
+		}
+	}
+
+	// Update player list
+	playersList := getPlayersList(room)
+	broadcastPlayerList(roomID, playersList, nil)
 }
