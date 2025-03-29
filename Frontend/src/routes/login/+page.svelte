@@ -23,7 +23,7 @@
             }
 
             setToken(data.token);
-            goto('/');
+            goto('/home');
         } catch (err) {
             error = err instanceof Error ? err.message : 'An unknown error occurred';
         }
@@ -42,7 +42,7 @@
           <!-- Close button -->
           <button 
             class="absolute top-4 right-4 text-white text-2xl font-bold hover:text-red-400 transition"
-            on:click={() => goto('/')}
+            on:click={() => goto('/home')}
           >
             ×
           </button>
