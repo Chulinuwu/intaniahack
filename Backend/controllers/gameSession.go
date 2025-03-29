@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"backend-go/config"
 	"backend-go/models"
 	"backend-go/utils"
 	"context"
@@ -58,8 +57,8 @@ func InitGameSession(roomID string, playerNames []string) *models.GameState {
 	gameSessions[gameID] = gameState
 
 	// Store in Redis for persistence
-	jsonData, _ := json.Marshal(gameState)
-	config.RedisClient.Set(ctx, fmt.Sprintf("game:%s", gameID), jsonData, 24*time.Hour)
+	// jsonData, _ := json.Marshal(gameState)
+	// config.RedisClient.Set(ctx, fmt.Sprintf("game:%s", gameID), jsonData, 24*time.Hour)
 
 	return gameState
 }
@@ -102,20 +101,52 @@ func HandleStartGame(roomID string, room *models.Room) {
 
 // startPlayerTurn sends an event to indicate it's a player's turn
 func startPlayerTurn(room *models.Room, playerIndex int) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("PANIC in startPlayerTurn:", r)
+		}
+	}()
+
+	fmt.Println("ENTERING startPlayerTurn for player:", playerIndex)
+
+	if room == nil {
+		fmt.Println("Error: Room is nil in startPlayerTurn")
+		return
+	}
+
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
-	if playerIndex >= len(room.Players)+1 {
-		playerIndex = 0 // Reset to first player
+	fmt.Println("Starting turn for player index:", playerIndex)
+
+	// Safety check for total players
+	totalPlayers := len(room.Players) + 1 // +1 for host
+	fmt.Println("Total players:", totalPlayers)
+
+	if playerIndex >= totalPlayers {
+		fmt.Println("Error: playerIndex out of bounds, resetting to 0")
+		playerIndex = 0
 	}
 
 	gameState := room.GameState
+	if gameState == nil {
+		fmt.Println("Error: GameState is nil in startPlayerTurn")
+		return
+	}
+
+	if len(gameState.Players) <= playerIndex {
+		fmt.Println("Error: Not enough players in gameState")
+		return
+	}
+
 	gameState.Mutex.Lock()
 	gameState.CurrentTurn = playerIndex
 
-	// Update player turns
+	// Update player turns with safety check
 	for i := range gameState.Players {
-		gameState.Players[i].Turn = (i == playerIndex)
+		if i < len(gameState.Players) {
+			gameState.Players[i].Turn = (i == playerIndex)
+		}
 	}
 
 	// Generate random event for the current player
@@ -126,8 +157,20 @@ func startPlayerTurn(room *models.Room, playerIndex int) {
 	var targetConn *websocket.Conn
 	if playerIndex == 0 {
 		targetConn = room.Host
+		if targetConn == nil {
+			fmt.Println("Error: Host connection is nil")
+			return
+		}
 	} else {
+		if playerIndex-1 >= len(room.Players) || playerIndex-1 < 0 {
+			fmt.Println("Error: Player index out of bounds:", playerIndex-1)
+			return
+		}
 		targetConn = room.Players[playerIndex-1]
+		if targetConn == nil {
+			fmt.Println("Error: Player connection is nil for index:", playerIndex-1)
+			return
+		}
 	}
 
 	// Send turn start event to the player
@@ -138,7 +181,9 @@ func startPlayerTurn(room *models.Room, playerIndex int) {
 		"event_data":   event,
 	}
 
-	targetConn.WriteJSON(message)
+	if err := targetConn.WriteJSON(message); err != nil {
+		fmt.Println("Error sending turn_start message:", err)
+	}
 
 	// Broadcast to other players that it's this player's turn
 	otherPlayerMessage := gin.H{
@@ -149,26 +194,37 @@ func startPlayerTurn(room *models.Room, playerIndex int) {
 
 	// Send to host if not their turn
 	if playerIndex != 0 {
-		room.Host.WriteJSON(otherPlayerMessage)
+		if err := room.Host.WriteJSON(otherPlayerMessage); err != nil {
+			fmt.Println("Error sending waiting_for_turn message to host:", err)
+		}
 	}
 
 	// Send to other players
 	for i, conn := range room.Players {
-		if i != playerIndex-1 { // Skip the current player
-			conn.WriteJSON(otherPlayerMessage)
+		if i != playerIndex-1 {
+			if err := conn.WriteJSON(otherPlayerMessage); err != nil {
+				fmt.Println("Error sending waiting_for_turn message to player:", err)
+			}
 		}
 	}
 }
 
 // HandlePlayerChoice processes a player's choice
 func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eventID string) {
+	if room == nil {
+		fmt.Println("Error: Room is nil in HandlePlayerChoice")
+		return
+	}
+
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
+
 	fmt.Println("Handling player choice:", choiceID, eventID)
 	fmt.Println("Player index:", playerIndex)
 
 	gameState := room.GameState
 	if gameState == nil {
+		fmt.Println("Error: GameState is nil in HandlePlayerChoice")
 		return
 	}
 
@@ -234,14 +290,16 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 	}
 
 	// Update game state in Redis
-	jsonData, _ := json.Marshal(gameState)
-	config.RedisClient.Set(ctx, fmt.Sprintf("game:%s", gameState.GameID), jsonData, 24*time.Hour)
+	// jsonData, _ := json.Marshal(gameState)
+	// config.RedisClient.Set(ctx, fmt.Sprintf("game:%s", gameState.GameID), jsonData, 24*time.Hour)
 
 	// Broadcast the turn result to all players
 	broadcastTurnResult(room, gameState, playerIndex, currentEvent, choiceID)
+}
 
-	// Check if this completes a round of turns
-	checkAgeProgression(room)
+func scheduleNextTurn(room *models.Room, nextPlayerIndex int) {
+	fmt.Println("Scheduling next turn for player index:", nextPlayerIndex)
+	startPlayerTurn(room, nextPlayerIndex)
 }
 
 // ApplyEffectToPlayer applies effects to a player's stats
@@ -312,11 +370,6 @@ func broadcastTurnResult(room *models.Room, gameState *models.GameState, playerI
 	}
 
 	broadcastToRoom(room, message)
-
-	// After a short delay, start the next player's turn
-	time.Sleep(3 * time.Second)
-	nextPlayerIndex := (playerIndex + 1) % (len(room.Players) + 1)
-	startPlayerTurn(room, nextPlayerIndex)
 }
 
 // checkAgeProgression checks if all players have completed their turns and advances age if needed
@@ -335,6 +388,9 @@ func checkAgeProgression(room *models.Room) {
 	// totalPlayers := len(room.Players) + 1
 
 	// If the current turn is back to player 0, we've completed a round
+	if gameState.CurrentAge == 0 && gameState.CurrentTurn == 1 {
+		// Reset all players' turns
+	}
 	if gameState.CurrentTurn == 0 {
 		// Move to the next age
 		if gameState.CurrentAge < 6 { // 0-6 are our 7 age ranges
@@ -351,8 +407,8 @@ func checkAgeProgression(room *models.Room) {
 			broadcastToRoom(room, message)
 
 			// Update game state in Redis
-			jsonData, _ := json.Marshal(gameState)
-			config.RedisClient.Set(ctx, fmt.Sprintf("game:%s", gameState.GameID), jsonData, 24*time.Hour)
+			// jsonData, _ := json.Marshal(gameState)
+			// config.RedisClient.Set(ctx, fmt.Sprintf("game:%s", gameState.GameID), jsonData, 24*time.Hour)
 		} else {
 			// Game is complete if we've gone through all ages
 			finalizeGame(room)
@@ -362,6 +418,7 @@ func checkAgeProgression(room *models.Room) {
 
 // finalizeGame calculates final scores and ends the game
 func finalizeGame(room *models.Room) {
+	// TODO : room mutex is not working because it already lock in checkAgeProgression
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
