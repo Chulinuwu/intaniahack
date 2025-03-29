@@ -58,7 +58,6 @@
 </style>
 
 <div class="min-h-screen flex items-center justify-center relative" style={`background-image: url('${bg}'); background-size: cover; background-position: center; background-color: rgba(0, 0, 0, 0.5); background-blend-mode: darken;`}>
-    <!-- Modal box -->
     <div class="relative w-full h-screen flex items-center justify-center">
         <div class=" px-10 py-8 rounded-md shadow-xl relative w-full max-w-md border">
           

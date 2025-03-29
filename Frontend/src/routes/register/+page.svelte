@@ -8,7 +8,7 @@
     let error = '';
     async function handleLogin() {
         try {
-            const response = await fetch(`http://${import.meta.env.VITE_API_URL}/register`, {
+            const response = await fetch(`http://${import.meta.env.VITE_API_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -23,14 +23,14 @@
             }
 
             setToken(data.token);
-            goto('/');
+            goto('/home');
         } catch (err) {
             error = err instanceof Error ? err.message : 'An unknown error occurred';
         }
     }
     async function handleRegister() {
     try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/register`, {
+        const response = await fetch(`http://${import.meta.env.VITE_API_URL}/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -65,9 +65,9 @@
           <!-- Close button -->
           <button 
             class="absolute top-4 right-4 text-white text-2xl font-bold hover:text-red-400 transition"
-            on:click={() => goto('/')}
+            on:click={() => goto('/home')}
           >
-            ×
+            x
           </button>
       
           <form on:submit|preventDefault={handleRegister} class="space-y-6">

@@ -33,15 +33,15 @@
     }
 </script>
 
-<div class="flex flex-col bg-gray-900 border border-white text-white rounded-lg p-2 gap-1 w-[116px] h-[217px]">
+<div class="flex flex-col bg-gray-900 border border-white text-white rounded-lg p-2 gap-0.5 w-[116px] h-[200px]">
     <!-- Profile Section -->
-    <div class="flex items-center">
-        <img src={profileImage} alt="Profile" class="w-6 h-6 rounded-full border-2 border-white mr-3" />
-        <h2 class="text-xs font-bold">{playerName}</h2>
+    <div class="flex gap-2 items-center">
+        <img src={profileImage} alt="Profile" class="w-6 h-6 rounded-full border-2 border-white" />
+        <h2 class="text-xs font-semibold leading-none">{playerName}</h2>
     </div>
 
     <!-- Stats Section -->
-    <div class="space-y-0 text-xs">
+    <div class="space-y-0 text-[10px] leading-4">
         <div class="flex justify-between items-center">
             <div class="flex items-center">
                 <span class="w-2 h-2 bg-green-400 rounded-full border border-white mr-2"></span>

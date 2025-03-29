@@ -39,7 +39,7 @@
 
     function handleLogout() {
         goto('/');
-        removeToken(); 
+        removeToken();
     }
 
     function playButton() {
@@ -81,7 +81,7 @@
                         Login
                     </button>
                     <button 
-                        on:click={() => goto('/signup')} 
+                        on:click={() => goto('/register')} 
                         class="w-full bg-gray-800 text-white py-3 px-4 rounded-md hover:bg-gray-700 transition duration-300 font-semibold border border-white shadow-md">
                         Sign Up
                     </button>
