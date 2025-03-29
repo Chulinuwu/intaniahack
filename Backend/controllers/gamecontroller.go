@@ -33,7 +33,7 @@ func HostGame(c *gin.Context) {
         return
     }
 
-    // อ่านข้อความแรกจาก WebSocket เพื่อรับ token
+    // อ่านข้อความแรกจาก WebSocket
     _, msg, err := conn.ReadMessage()
     if err != nil {
         fmt.Println("WebSocket Read Error:", err)
@@ -42,8 +42,10 @@ func HostGame(c *gin.Context) {
         return
     }
 
+    // Parse JSON เพื่อรับ token และ topic
     var tokenData struct {
         Authorization string `json:"Authorization"`
+        Topic         string `json:"topic"`
     }
     if err := json.Unmarshal(msg, &tokenData); err != nil {
         conn.Close()
@@ -78,11 +80,12 @@ func HostGame(c *gin.Context) {
         Players:     []*websocket.Conn{},
         HostName:    username,
         PlayerNames: make(map[*websocket.Conn]string),
+        Topic:       tokenData.Topic, // เก็บ topic ที่ได้รับ
     }
     roomsMutex.Unlock()
 
-    conn.WriteJSON(gin.H{"room_id": roomID, "host": username})
-    fmt.Println("Room created:", roomID)
+    conn.WriteJSON(gin.H{"room_id": roomID, "host": username, "topic": tokenData.Topic})
+    fmt.Println("Room created:", roomID, "Topic:", tokenData.Topic)
 
     go handleMessages(conn, roomID)
 }
@@ -191,11 +194,11 @@ func broadcastPlayerList(roomID string, playersList []string, sender *websocket.
         return
     }
 
-    // สร้างข้อมูลที่มี host ระบุชัดเจน
     message := gin.H{
         "event": "player_list",
         "players": playersList,
-        "host": room.HostName, // เพิ่ม field host
+        "host": room.HostName, 
+		"topic":   room.Topic,
     }
 
     room.Mutex.Lock()
