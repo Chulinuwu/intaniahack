@@ -17,7 +17,7 @@ import (
 
 var rooms = make(map[string]*models.Room) // เก็บข้อมูลห้องที่สร้าง
 var roomsMutex sync.Mutex                 // ป้องกันปัญหาการเข้าถึงข้อมูลพร้อมกัน
-const MAX_PLAYERS = 2
+const MAX_PLAYERS = 3
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
