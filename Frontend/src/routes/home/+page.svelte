@@ -42,12 +42,8 @@
         removeToken();
     }
 
-    function mockJoin() {
-        alert('Joining... (mock action)');
-    }
-
-    function mockHost() {
-        alert('Hosting... (mock action)');
+    function playButton() {
+        goto('/testlobby');
     }
 </script>
 
@@ -64,14 +60,9 @@
                 <p class="text-gray-300 mb-6 text-center">Email: {email}</p>
                 <div class="flex flex-col gap-4">
                     <button 
-                        on:click={mockJoin} 
+                        on:click={playButton} 
                         class="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition duration-300 font-semibold">
-                        Join
-                    </button>
-                    <button 
-                        on:click={mockHost} 
-                        class="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 transition duration-300 font-semibold">
-                        Host
+                        Play
                     </button>
                     <button 
                         on:click={handleLogout} 

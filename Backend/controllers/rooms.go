@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime/debug"
 	"strings"
 	"sync"
 
@@ -16,7 +17,7 @@ import (
 
 var rooms = make(map[string]*models.Room) // เก็บข้อมูลห้องที่สร้าง
 var roomsMutex sync.Mutex                 // ป้องกันปัญหาการเข้าถึงข้อมูลพร้อมกัน
-const MAX_PLAYERS = 3
+const MAX_PLAYERS = 2
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
@@ -100,7 +101,7 @@ func HostGame(c *gin.Context) {
 	conn.WriteJSON(gin.H{"room_id": roomID, "host": username, "topic": topic})
 	fmt.Println("Room created:", roomID, "Topic:", topic)
 
-	go handleMessages(conn, roomID)
+	handleMessages(conn, roomID)
 }
 
 // เข้าร่วมห้อง
@@ -176,7 +177,7 @@ func JoinGame(c *gin.Context) {
 		broadcastStartGame(roomID)
 	}
 
-	go handleMessages(conn, roomID)
+	handleMessages(conn, roomID)
 }
 
 // ดึงรายชื่อผู้เล่นในห้อง
@@ -253,6 +254,9 @@ func broadcastStartGame(roomID string) {
 
 func handleMessages(conn *websocket.Conn, roomID string) {
 	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("PANIC in handleMessages:", r)
+		}
 		conn.Close()
 		removeConnection(roomID, conn)
 	}()
@@ -274,13 +278,18 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 			PlayerIndex int    `json:"player_index"`
 		}
 		if err := json.Unmarshal(message, &msgData); err == nil {
+			fmt.Println("Parsed message data:", msgData)
+
 			// Get the room
 			roomsMutex.Lock()
 			room, exists := rooms[roomID]
 			roomsMutex.Unlock()
 			if !exists {
+				fmt.Println("Room not found:", roomID)
 				continue
 			}
+
+			fmt.Println("Room found, handling event:", msgData.Event)
 
 			// Handle different event types
 			switch msgData.Event {
@@ -289,7 +298,26 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 				continue
 
 			case "make_choice":
-				HandlePlayerChoice(room, msgData.PlayerIndex, msgData.ChoiceID, msgData.EventID)
+				fmt.Println("Before HandlePlayerChoice")
+				func() {
+					defer func() {
+						if r := recover(); r != nil {
+							fmt.Println("PANIC in HandlePlayerChoice:", r)
+							// Print stack trace for better debugging
+							debug.PrintStack()
+						}
+					}()
+					HandlePlayerChoice(room, msgData.PlayerIndex, msgData.ChoiceID, msgData.EventID)
+
+					// Check if this completes a round of turns
+					checkAgeProgression(room)
+
+					// Schedule the next turn
+					nextPlayerIndex := (msgData.PlayerIndex + 1) % (len(room.Players) + 1) // +1 for host
+					fmt.Println("msgData.PlayerIndex:", msgData.PlayerIndex)
+					scheduleNextTurn(room, nextPlayerIndex)
+				}()
+				fmt.Println("After HandlePlayerChoice")
 				continue
 			}
 		} else {
