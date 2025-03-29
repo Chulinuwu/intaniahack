@@ -3,11 +3,14 @@ package controllers
 import (
 	"backend-go/models"
 	"backend-go/utils"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/websocket"
 )
 
@@ -29,34 +32,72 @@ func HostGame(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "WebSocket Upgrade Error"})
 		return
 	}
+	c.Writer.WriteHeader(http.StatusSwitchingProtocols)
 
 	tokenString := c.GetHeader("Authorization")
+	topic := c.Query("topic")
 	if tokenString == "" {
+		// ถ้าไม่มีใน header ให้รอข้อความแรก
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			fmt.Println("WebSocket Read Error:", err)
+			conn.Close()
+			return
+		}
+
+		var tokenData struct {
+			Authorization string `json:"Authorization"`
+			Topic         string `json:"topic"`
+		}
+		if err := json.Unmarshal(msg, &tokenData); err != nil {
+			conn.WriteJSON(gin.H{"error": "Invalid token format"})
+			conn.Close()
+			return
+		}
+
+		tokenString = strings.TrimPrefix(tokenData.Authorization, "Bearer ")
+		if tokenData.Topic != "" {
+			topic = tokenData.Topic
+		}
+	} else {
+		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+	}
+
+	if tokenString == "" {
+		conn.WriteJSON(gin.H{"error": "Token missing"})
 		conn.Close()
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Token missing"})
 		return
 	}
 
-	username, exists := c.Get("username")
-	if !exists {
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return JwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		conn.WriteJSON(gin.H{"error": "Invalid token"})
 		conn.Close()
 		return
 	}
 
+	username := claims.Username
 	roomID := utils.GenerateRoomID()
+	if topic == "" {
+		topic = "General Knowledge" // Default topic
+	}
 
 	roomsMutex.Lock()
 	rooms[roomID] = &models.Room{
 		ID:          roomID,
 		Host:        conn,
 		Players:     []*websocket.Conn{},
-		HostName:    username.(string),
-		PlayerNames: make(map[*websocket.Conn]string), // กำหนดค่าเริ่มต้นให้ PlayerNames
+		HostName:    username,
+		PlayerNames: make(map[*websocket.Conn]string),
+		Topic:       topic,
 	}
 	roomsMutex.Unlock()
 
-	conn.WriteJSON(gin.H{"room_id": roomID, "host": username})
-	fmt.Println("Room created:", roomID)
+	conn.WriteJSON(gin.H{"room_id": roomID, "host": username, "topic": topic})
+	fmt.Println("Room created:", roomID, "Topic:", topic)
 
 	go handleMessages(conn, roomID)
 }
@@ -69,11 +110,38 @@ func JoinGame(c *gin.Context) {
 		return
 	}
 
-	username, exists := c.Get("username")
-	if !exists {
+	// อ่านข้อความแรกจาก WebSocket เพื่อรับ token
+	_, msg, err := conn.ReadMessage()
+	if err != nil {
+		fmt.Println("WebSocket Read Error:", err)
 		conn.Close()
 		return
 	}
+
+	var tokenData struct {
+		Authorization string `json:"Authorization"`
+	}
+	if err := json.Unmarshal(msg, &tokenData); err != nil {
+		conn.Close()
+		return
+	}
+
+	tokenString := strings.TrimPrefix(tokenData.Authorization, "Bearer ")
+	if tokenString == "" {
+		conn.Close()
+		return
+	}
+
+	claims := &Claims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return JwtKey, nil
+	})
+	if err != nil || !token.Valid {
+		conn.Close()
+		return
+	}
+
+	username := claims.Username
 
 	roomsMutex.Lock()
 	room, exists := rooms[roomID]
@@ -85,8 +153,7 @@ func JoinGame(c *gin.Context) {
 	}
 
 	room.Mutex.Lock()
-	// ตรวจสอบจำนวนผู้เล่น (รวม host แล้วต้องไม่เกิน 3)
-	totalPlayers := len(room.Players) + 1 // +1 เพราะมี host
+	totalPlayers := len(room.Players) + 1
 	if totalPlayers >= 3 {
 		conn.WriteJSON(gin.H{"error": "Room is full (max 3 players)"})
 		conn.Close()
@@ -95,20 +162,15 @@ func JoinGame(c *gin.Context) {
 	}
 
 	room.Players = append(room.Players, conn)
-	room.PlayerNames[conn] = username.(string) // เก็บ username ของผู้เล่นใน map
-	totalPlayers++                             // อัปเดตจำนวนผู้เล่นหลังจากเพิ่ม
+	room.PlayerNames[conn] = username
+	totalPlayers++
 	room.Mutex.Unlock()
 
-	// ส่งข้อความยืนยันไปยังผู้เล่นที่เข้าร่วม
 	conn.WriteJSON(gin.H{"message": "Joined room successfully", "username": username})
 
-	// สร้างรายชื่อผู้เล่น
 	playersList := getPlayersList(room)
-
-	// Broadcast รายชื่อผู้เล่นให้ทุกคนในห้อง
 	broadcastPlayerList(roomID, playersList, nil)
 
-	// ถ้าครบ 3 คน ส่งข้อความว่าเริ่มเกมได้
 	if totalPlayers == 3 {
 		broadcastStartGame(roomID)
 	}
@@ -144,7 +206,12 @@ func broadcastPlayerList(roomID string, playersList []string, sender *websocket.
 		return
 	}
 
-	message := gin.H{"event": "player_list", "players": playersList}
+	message := gin.H{
+		"event":   "player_list",
+		"players": playersList,
+		"host":    room.HostName,
+		"topic":   room.Topic,
+	}
 
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
@@ -183,7 +250,6 @@ func broadcastStartGame(roomID string) {
 	}
 }
 
-// จัดการข้อความจาก WebSocket
 func handleMessages(conn *websocket.Conn, roomID string) {
 	defer func() {
 		conn.Close()
@@ -195,6 +261,18 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 		if err != nil {
 			fmt.Println("WebSocket Read Error:", err)
 			break
+		}
+
+		// Parse ข้อความเพื่อตรวจสอบ event
+		var msgData struct {
+			Event  string `json:"event"`
+			RoomID string `json:"room_id"`
+		}
+		if err := json.Unmarshal(message, &msgData); err == nil {
+			if msgData.Event == "start_game" {
+				broadcast(roomID, message, conn) // ส่งต่อ start_game ไปยังทุกคน
+				continue
+			}
 		}
 
 		broadcast(roomID, message, conn)

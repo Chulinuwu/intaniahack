@@ -1,9 +1,16 @@
-<script>
+<script lang="ts">
     import { onMount } from 'svelte';
     import { goto } from '$app/navigation';
     import { browser } from '$app/environment';
     import { token } from '$lib/auth';
 	import '../app.css'
+    import RotatePage from '../components/Rotate/RotatePage.svelte';
+ 
+    let isPortrait = false;
+ 
+    function checkOrientation() {
+        isPortrait = window.matchMedia('(orientation: portrait)').matches;
+    }
 
     onMount(() => {
         if (browser) {
@@ -12,6 +19,14 @@
                 goto('/home');
             }
         }
+        
+        // check orientation on mount
+        checkOrientation();
+             window.addEventListener('resize', checkOrientation);
+ 
+             return () => {
+                 window.removeEventListener('resize', checkOrientation);
+             };
     });
 
     // reactive statement สำหรับ client-side changes
@@ -20,4 +35,9 @@
     }
 </script>
 
-<slot />
+
+{#if isPortrait}
+     <RotatePage />
+ {:else}
+     <slot />
+ {/if}

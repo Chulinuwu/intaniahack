@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"backend-go/config"
 	"backend-go/routes"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {

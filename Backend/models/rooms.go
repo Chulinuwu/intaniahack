@@ -11,6 +11,7 @@ type Room struct {
 	Players     []*websocket.Conn
 	Mutex       sync.Mutex
 	HostName    string
-	PlayerNames map[*websocket.Conn]string // เพิ่มฟิลด์นี้เพื่อเก็บ username ของผู้เล่น
+	PlayerNames map[*websocket.Conn]string 
+	Topic       string
 }
 
