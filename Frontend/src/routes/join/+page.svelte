@@ -178,10 +178,10 @@
 </script>
 
 <div
-  class="flex flex-col gap-0 items-center justify-center"
+  class="flex flex-col w-full h-full justify-between py-2 px-5 items-center justify-center"
   style="background-image: url('src/lib/assets/image/play-bg.png'); background-size: cover; background-position: center; height: 100vh;"
 >
-  <div class="flex gap-5">
+  <div class="flex w-full justify-between">
       <CompetiterCard
           profileImage="src/lib/assets/image/profile.jpg"
           playerName="John Doe"
@@ -202,51 +202,51 @@
           ]}
       />
       <button 
-          class="text-white mt-10 p-2 rounded-full hover:scale-110 disabled:opacity-50" 
+          class="mt-10 hover:scale-110 disabled:opacity-50" 
           on:click={() => changeAge(-1)} 
           disabled={currentAgeIndex === 0}
       >
-          &#9664; <!-- ลูกศรซ้าย -->
+          <img src='src/lib/assets/icon/left.svg' alt="left icon" class="h-5" /> <!-- ลูกศรขวา -->
       </button>
       <div class="flex flex-col text-white text-center">
           <div class="text-sm">GET THE MOST MONEY</div>
           <TimeLeft />
           <div class="text-xs">AGE {currentAge.label}</div>
           <!-- Drop Zones สำหรับช่วงอายุปัจจุบัน -->
-          <div class="flex mt-2 gap-3 min-h-[160px]">
+          <div class="flex mt-2 gap-3">
               {#each currentAge.data as card, i}
-      <div 
-          class="w-24 h-32 border-2 border-dashed border-white rounded-md flex items-center justify-center cursor-pointer"
-          on:click={() => {
-              if (card) {
-                  // ถ้ามีการ์ดอยู่แล้ว ให้เลือกการ์ดนั้น
-                  selectCard(card, i, 'dropzone', currentAgeIndex);
-              } else if (selectedCard) {
-                  // ถ้าไม่มีการ์ดแต่มีการ์ดเลือกอยู่ ให้ย้ายการ์ดมาที่นี่
-                  moveCardToSlot(i);
-              }
-          }}
-          class:bg-gray-700={selectedCard && !card}
-      >
-          {#if card}
-              <div
-                  on:click|stopPropagation={() => selectCard(card, i, 'dropzone', currentAgeIndex)}
-                  class:scale-110={selectedCardIndex === i && selectedCardSource === 'dropzone' && selectedAgeIndex === currentAgeIndex}
-                  class="transition-transform duration-200"
-              >
-                  <PlayCard {...card} />
-              </div>
-          {/if}
-      </div>
-  {/each}
+                <div 
+                    class="w-24 h-32 border-2 border-dashed border-white rounded-md flex items-center justify-center cursor-pointer"
+                    on:click={() => {
+                        if (card) {
+                            // ถ้ามีการ์ดอยู่แล้ว ให้เลือกการ์ดนั้น
+                            selectCard(card, i, 'dropzone', currentAgeIndex);
+                        } else if (selectedCard) {
+                            // ถ้าไม่มีการ์ดแต่มีการ์ดเลือกอยู่ ให้ย้ายการ์ดมาที่นี่
+                            moveCardToSlot(i);
+                        }
+                    }}
+                    class:bg-[#474848]={selectedCard && !card}
+                >
+                    {#if card}
+                        <div
+                            on:click|stopPropagation={() => selectCard(card, i, 'dropzone', currentAgeIndex)}
+                            class:scale-110={selectedCardIndex === i && selectedCardSource === 'dropzone' && selectedAgeIndex === currentAgeIndex}
+                            class="transition-transform duration-200"
+                        >
+                            <PlayCard {...card} />
+                        </div>
+                    {/if}
+                </div>
+            {/each}
           </div>
       </div>
       <button 
-          class="text-white mt-10 p-2 rounded-full hover:scale-110 disabled:opacity-50" 
+          class="mt-10 hover:scale-110 disabled:opacity-50" 
           on:click={() => changeAge(1)} 
           disabled={currentAgeIndex === ageRanges.length - 1}
       >
-          &#9654; <!-- ลูกศรขวา -->
+        <img src='src/lib/assets/icon/right.svg' alt="right icon" class="h-5" /> <!-- ลูกศรขวา -->
       </button>
       <CompetiterCard
           profileImage="src/lib/assets/image/profile.jpg"
@@ -260,11 +260,6 @@
               { type: "happiness", description: "Exploring and discovering." },
               { type: "relationship", description: "Building a career and relationships." },
               { type: "knowledge", description: "Learning and growing." },
-              // { type: "knowledge", description: "Exploring and discovering." },
-              // { type: "relationship", description: "Building a career and relationships." },
-              // { type: "money", description: "Learning and growing." },
-              // { type: "knowledge", description: "Exploring and discovering." },
-              
           ]}
           age13_18={[
               { type: "money", description: "Learning and growing." },
@@ -273,11 +268,11 @@
           ]}
       />
   </div>
-  <div class="flex text-white gap-5">
-      <button on:click={() => getDeck()} class="w-[166px] h-auto p-0 border-0 bg-transparent">
-          <img src="src/lib/assets/image/play/random-deck-button.svg" alt="desk" class="w-full h-auto" />
+  <div class="flex w-full text-white justify-between">
+      <button on:click={() => getDeck()}>
+          <img src="src/lib/assets/image/play/random-deck-button.svg" alt="desk" class="w-[169px] h-[165px]" />
       </button>
-      <div class="flex flex-col gap-3">
+      <div class="flex flex-col gap-1">
           <div class="flex justify-between">
               <div class="flex flex-col">
                   <div class="text-2xl">
