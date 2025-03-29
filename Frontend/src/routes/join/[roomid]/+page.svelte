@@ -1,9 +1,10 @@
 <script lang="ts">
-    import CompetiterCard from "../../components/CompetiterCard.svelte";
-    import PlayCard from "../../components/PlayCard.svelte";
+    import CompetiterCard from "../../../components/CompetiterCard.svelte";
+    import PlayCard from "../../../components/PlayCard.svelte";
     import { iconMapColor } from '$lib/utils/iconMapColor';
-    import TimeLeft from "../../components/TimeLeft.svelte";
+    import TimeLeft from "../../../components/TimeLeft.svelte";
   
+    let handCards: { type: string; pic: string; description: string; money: number; happiness: number; knowledge: number; relationship: number }[] = [];
     let currentAgeIndex = 0;
     $: currentAge = ageRanges[currentAgeIndex];
   
@@ -12,8 +13,37 @@
     }
   
     function getDeck() {
-        console.log("Deck clicked!");
-    }
+    console.log("Deck clicked!");
+
+    fetch('/events-data.json')
+        .then(response => response.json())
+        .then(events => {
+            // กรองการ์ดที่ตรงกับ currentAgeIndex
+            const filteredCards = events.filter((event: { ageIndex: number }) => event.ageIndex === currentAgeIndex);
+
+            // สุ่มการ์ด 6 ใบ
+            const randomCards = [];
+            for (let i = 0; i < 6; i++) {
+                const randomIndex = Math.floor(Math.random() * filteredCards.length);
+                const card = filteredCards.splice(randomIndex, 1)[0];
+                randomCards.push({
+                    type: card.type,
+                    pic: card.image || '../src/lib/assets/image/play/money.png', // ใช้ภาพเริ่มต้นถ้าไม่มี
+                    description: card.description,
+                    money: card.effects.money,
+                    happiness: card.effects.happiness,
+                    knowledge: card.effects.knowledge,
+                    relationship: card.effects.relationship
+                });
+            }
+
+            // อัปเดต handCards
+            handCards = randomCards;
+        })
+        .catch(error => {
+            console.error('Error loading deck:', error);
+        });
+}
   
     // เพิ่มตัวแปรสำหรับระบบ drag and drop
     let droppedCards0_12: any[] = Array(5).fill(null);
@@ -117,73 +147,16 @@
       function handleSubmit() {
           console.log("eieiei", ageRanges);
       }
-  
-  
-    let handCards = [
-        {
-            type: "happiness",
-            pic: "src/lib/assets/image/play/money.png",
-            description: "happiness Card",
-            money: 5,
-            happiness: 2,
-            knowledge: 10,
-            relationship: 0
-        },
-        {
-            type: "happiness",
-            pic: "src/lib/assets/image/play/money.png",
-            description: "happiness Card",
-            money: 5,
-            happiness: 2,
-            knowledge: 10,
-            relationship: 0
-        },
-        {
-            type: "happiness",
-            pic: "src/lib/assets/image/play/money.png",
-            description: "happiness Card",
-            money: 5,
-            happiness: 2,
-            knowledge: 10,
-            relationship: 0
-        },
-        {
-            type: "happiness",
-            pic: "src/lib/assets/image/play/money.png",
-            description: "happiness Card",
-            money: 5,
-            happiness: 2,
-            knowledge: 10,
-            relationship: 0
-        },
-        {
-            type: "happiness",
-            pic: "src/lib/assets/image/play/money.png",
-            description: "happiness Card",
-            money: 5,
-            happiness: 2,
-            knowledge: 10,
-            relationship: 0
-        },
-        {
-            type: "happiness",
-            pic: "src/lib/assets/image/play/money.png",
-            description: "happiness Card",
-            money: 5,
-            happiness: 2,
-            knowledge: 10,
-            relationship: 0
-        }
-    ]
-  </script>
+
+</script>
   
   <div
     class="flex flex-col w-full h-full justify-between py-2 px-5 items-center justify-center"
-    style="background-image: url('src/lib/assets/image/play-bg.png'); background-size: cover; background-position: center; height: 100vh;"
+    style="background-image: url('../src/lib/assets/image/play-bg.png'); background-size: cover; background-position: center; height: 100vh;"
   >
     <div class="flex w-full justify-between">
         <CompetiterCard
-            profileImage="src/lib/assets/image/profile.jpg"
+            profileImage="../src/lib/assets/image/profile.jpg"
             playerName="John Doe"
             money={1000}
             happiness={80}
@@ -206,7 +179,7 @@
             on:click={() => changeAge(-1)} 
             disabled={currentAgeIndex === 0}
         >
-            <img src='src/lib/assets/icon/left.svg' alt="left icon" class="h-5" /> <!-- ลูกศรขวา -->
+            <img src='../src/lib/assets/icon/left.svg' alt="left icon" class="h-5" /> <!-- ลูกศรขวา -->
         </button>
         <div class="flex flex-col text-white text-center">
             <div class="text-sm">GET THE MOST MONEY</div>
@@ -246,10 +219,10 @@
             on:click={() => changeAge(1)} 
             disabled={currentAgeIndex === ageRanges.length - 1}
         >
-          <img src='src/lib/assets/icon/right.svg' alt="right icon" class="h-5" /> <!-- ลูกศรขวา -->
+          <img src='../src/lib/assets/icon/right.svg' alt="right icon" class="h-5" /> <!-- ลูกศรขวา -->
         </button>
         <CompetiterCard
-            profileImage="src/lib/assets/image/profile.jpg"
+            profileImage="../src/lib/assets/image/profile.jpg"
             playerName="John Doe"
             money={1000}
             happiness={80}
@@ -270,7 +243,7 @@
     </div>
     <div class="flex w-full text-white justify-between">
         <button on:click={() => getDeck()}>
-            <img src="src/lib/assets/image/play/random-deck-button.svg" alt="desk" class="w-[169px] h-[165px]" />
+            <img src="../src/lib/assets/image/play/random-deck-button.svg" alt="desk" class="w-[169px] h-[165px]" />
         </button>
         <div class="flex flex-col gap-1">
             <div class="flex justify-between">
@@ -306,7 +279,7 @@
                 </button>
                 <div class="flex flex-col items-center justify-center">
                     <div class="flex items-center gap-2">
-                        <img src='src/lib/assets/icon/PlayCard/heart.svg' alt="heart icon" class="h-4 mr-0.5" />
+                        <img src='../src/lib/assets/icon/PlayCard/heart.svg' alt="heart icon" class="h-4 mr-0.5" />
                         <div class="relative w-32 h-4 bg-[#D9D9D9] rounded-full overflow-hidden">
                             <div
                                 class="absolute top-0 left-0 h-full bg-[#FF8787]"
@@ -316,7 +289,7 @@
                         <span class="font-medium text-sm">1</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <img src='src/lib/assets/icon/PlayCard/hourglass.svg' alt="hourglass icon" class="h-4 w-4 mr-0.5" />
+                        <img src='../src/lib/assets/icon/PlayCard/hourglass.svg' alt="hourglass icon" class="h-4 w-4 mr-0.5" />
                         <div class="relative w-32 h-4 bg-[#D9D9D9] rounded-full overflow-hidden">
                             <div
                                 class="absolute top-0 left-0 h-full bg-[#99624E]"
@@ -365,13 +338,13 @@
         <div class="flex flex-col gap-2 items-center justify-center">
             <div class="flex gap-2">
                 <div class="w-[75px] relative">
-                    <img src="src/lib/assets/image/play/job-bg.svg" alt="job" class="w-full h-auto" />
+                    <img src="../src/lib/assets/image/play/job-bg.svg" alt="job" class="w-full h-auto" />
                     <div class="absolute inset-0 flex items-center justify-center text-white font-medium text-sm">
                         job
                     </div>
                 </div>
                 <div class="w-[75px] relative">
-                    <img src="src/lib/assets/image/play/investment-bg.svg" alt="investment" class="w-full h-auto" />
+                    <img src="../src/lib/assets/image/play/investment-bg.svg" alt="investment" class="w-full h-auto" />
                     <div class="absolute inset-0 flex items-center justify-center text-white font-medium text-sm">
                         investment
                     </div>
@@ -379,7 +352,7 @@
             </div>
             <div class="flex gap-2 relative">
                 <div class="w-[75px] relative">
-                    <img src="src/lib/assets/image/play/love-bg.svg" alt="love" class="w-full h-auto" />
+                    <img src="../src/lib/assets/image/play/love-bg.svg" alt="love" class="w-full h-auto" />
                     <div class="absolute inset-0 flex items-center justify-center text-white font-medium text-sm">
                         love
                     </div>
@@ -390,7 +363,7 @@
                       class:scale-110={selectedCard !== null}
                   >
                       <img 
-                          src="src/lib/assets/image/play/bin.svg" 
+                          src="../src/lib/assets/image/play/bin.svg" 
                           alt="bin" 
                           class="w-full h-[73px]"
                       />

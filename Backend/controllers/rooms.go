@@ -84,7 +84,7 @@ func HostGame(c *gin.Context) {
 	username := claims.Username
 	roomID := utils.GenerateRoomID()
 	if topic == "" {
-		topic = "General Knowledge" // Default topic
+		topic = "GET THE MOST Money" // Default topic
 	}
 
 	roomsMutex.Lock()
@@ -271,15 +271,15 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 
 		// ปรับโครงสร้างให้รองรับ eventIDs
 		var msgData struct {
-			Event       string   `json:"event"`
-			RoomID      string   `json:"room_id"`
-			EventID     string   `json:"event_id"`     // รูปแบบเดิม
-			EventIDs    []string `json:"event_ids"`    // รูปแบบใหม่ (array)
-			ChoiceID    string   `json:"choice_id"`
-			PlayerIndex int      `json:"player_index"`
+			Event       string                 `json:"event"`
+			RoomID      string                 `json:"room_id"`
+			EventID     string                 `json:"event_id"`  // รูปแบบเดิม
+			EventIDs    []string               `json:"event_ids"` // รูปแบบใหม่ (array)
+			ChoiceID    string                 `json:"choice_id"`
+			PlayerIndex int                    `json:"player_index"`
 			Data        map[string]interface{} `json:"data"` // สำหรับรูปแบบที่มี data object
 		}
-		
+
 		if err := json.Unmarshal(message, &msgData); err == nil {
 			fmt.Println("Parsed message data:", msgData)
 
@@ -296,7 +296,7 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 					}
 				}
 			}
-			
+
 			// ถ้าไม่มี eventIDs จาก data ให้ใช้จาก eventIDs โดยตรง
 			if len(eventIDs) == 0 {
 				eventIDs = msgData.EventIDs
@@ -329,7 +329,7 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 							debug.PrintStack()
 						}
 					}()
-					
+
 					// เรียกใช้ HandlePlayerChoice ด้วย eventIDs
 					HandlePlayerChoice(room, msgData.PlayerIndex, msgData.ChoiceID, msgData.EventID, eventIDs)
 

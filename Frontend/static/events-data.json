@@ -1,0 +1,1094 @@
+[
+  {
+    "id": "age0_1",
+    "type": "knowledge",
+    "description": "You're starting elementary school for the first time!",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": 5,
+      "happiness": 3,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_2",
+    "type": "relationship",
+    "description": "Join a sports team",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 5,
+      "relationship": 5
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_3",
+    "type": "knowledge",
+    "description": "Join the music club",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": 5,
+      "happiness": 3,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_4",
+    "type": "knowledge",
+    "description": "Join the science club",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": 8,
+      "happiness": 0,
+      "relationship": 2
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_5",
+    "type": "happiness",
+    "description": "Your family takes you on a memorable vacation",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 7,
+      "relationship": 5
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_6",
+    "type": "knowledge",
+    "description": "Spelling Bee",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": 7,
+      "happiness": 3,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_7",
+    "type": "relationship",
+    "description": "Sports Competition",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 6,
+      "relationship": 4
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_8",
+    "type": "happiness",
+    "description": "Art Contest",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": 4,
+      "happiness": 5,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_9",
+    "type": "happiness",
+    "description": "You've caught a bad flu and need to stay home from school",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": -2,
+      "happiness": -4,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_10",
+    "type": "happiness",
+    "description": "Have a big party with all your classmates",
+    "ageIndex": 0,
+    "effects": {
+      "money": -3,
+      "knowledge": 0,
+      "happiness": 8,
+      "relationship": 6
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_11",
+    "type": "happiness",
+    "description": "Quiet celebration with family",
+    "ageIndex": 0,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 5,
+      "relationship": 3
+    },
+    "image": ""
+  },
+  {
+    "id": "age0_12",
+    "type": "happiness",
+    "description": "Visit a theme park with your best friends",
+    "ageIndex": 0,
+    "effects": {
+      "money": -5,
+      "knowledge": 0,
+      "happiness": 10,
+      "relationship": 4
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_1",
+    "type": "knowledge",
+    "description": "You received recognition for your performance in school!",
+    "ageIndex": 1,
+    "effects": {
+      "money": 0,
+      "knowledge": 8,
+      "happiness": 5,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_2",
+    "type": "money",
+    "description": "Work in retail",
+    "ageIndex": 1,
+    "effects": {
+      "money": 3,
+      "knowledge": 0,
+      "happiness": 0,
+      "relationship": 4
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_3",
+    "type": "money",
+    "description": "Become a tutor",
+    "ageIndex": 1,
+    "effects": {
+      "money": 2,
+      "knowledge": 6,
+      "happiness": 0,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_4",
+    "type": "knowledge",
+    "description": "Focus on studies",
+    "ageIndex": 1,
+    "effects": {
+      "money": -2,
+      "knowledge": 10,
+      "happiness": 0,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_5",
+    "type": "relationship",
+    "description": "You had a disagreement with some friends",
+    "ageIndex": 1,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": -4,
+      "relationship": -3
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_6",
+    "type": "relationship",
+    "description": "Ask your crush to be your date",
+    "ageIndex": 1,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 7,
+      "relationship": 8
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_7",
+    "type": "relationship",
+    "description": "Go with a group of friends",
+    "ageIndex": 1,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 5,
+      "relationship": 5
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_8",
+    "type": "knowledge",
+    "description": "Skip the dance to study",
+    "ageIndex": 1,
+    "effects": {
+      "money": 0,
+      "knowledge": 7,
+      "happiness": 0,
+      "relationship": -2
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_9",
+    "type": "happiness",
+    "description": "You discovered a hobby that you're passionate about",
+    "ageIndex": 1,
+    "effects": {
+      "money": 0,
+      "knowledge": 4,
+      "happiness": 8,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_10",
+    "type": "relationship",
+    "description": "Give in to peer pressure",
+    "ageIndex": 1,
+    "effects": {
+      "money": 0,
+      "knowledge": 2,
+      "happiness": -3,
+      "relationship": 4
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_11",
+    "type": "relationship",
+    "description": "Refuse and stand your ground",
+    "ageIndex": 1,
+    "effects": {
+      "money": 0,
+      "knowledge": 3,
+      "happiness": 2,
+      "relationship": -3
+    },
+    "image": ""
+  },
+  {
+    "id": "age1_12",
+    "type": "knowledge",
+    "description": "Suggest a safer alternative",
+    "ageIndex": 1,
+    "effects": {
+      "money": 0,
+      "knowledge": 4,
+      "happiness": 3,
+      "relationship": 2
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_1",
+    "type": "knowledge",
+    "description": "Study STEM field",
+    "ageIndex": 2,
+    "effects": {
+      "money": -10,
+      "knowledge": 15,
+      "happiness": -2,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_2",
+    "type": "knowledge",
+    "description": "Study Business",
+    "ageIndex": 2,
+    "effects": {
+      "money": -5,
+      "knowledge": 10,
+      "happiness": 0,
+      "relationship": 5
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_3",
+    "type": "happiness",
+    "description": "Study Arts & Humanities",
+    "ageIndex": 2,
+    "effects": {
+      "money": -8,
+      "knowledge": 12,
+      "happiness": 5,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_4",
+    "type": "money",
+    "description": "Skip college and work full-time",
+    "ageIndex": 2,
+    "effects": {
+      "money": 12,
+      "knowledge": 2,
+      "happiness": 0,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_5",
+    "type": "relationship",
+    "description": "You've started your first serious relationship",
+    "ageIndex": 2,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 10,
+      "relationship": 12
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_6",
+    "type": "money",
+    "description": "College expenses are piling up",
+    "ageIndex": 2,
+    "effects": {
+      "money": -8,
+      "knowledge": 0,
+      "happiness": -3,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_7",
+    "type": "knowledge",
+    "description": "Go study abroad",
+    "ageIndex": 2,
+    "effects": {
+      "money": -12,
+      "knowledge": 12,
+      "happiness": 8,
+      "relationship": 4
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_8",
+    "type": "knowledge",
+    "description": "Stay at your current university",
+    "ageIndex": 2,
+    "effects": {
+      "money": -4,
+      "knowledge": 6,
+      "happiness": 0,
+      "relationship": 3
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_9",
+    "type": "knowledge",
+    "description": "Participate in an online international program",
+    "ageIndex": 2,
+    "effects": {
+      "money": -6,
+      "knowledge": 8,
+      "happiness": 4,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_10",
+    "type": "knowledge",
+    "description": "You've been recognized for your academic accomplishments",
+    "ageIndex": 2,
+    "effects": {
+      "money": 0,
+      "knowledge": 10,
+      "happiness": 7,
+      "relationship": 3
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_11",
+    "type": "relationship",
+    "description": "Live in the dormitories",
+    "ageIndex": 2,
+    "effects": {
+      "money": -8,
+      "knowledge": 0,
+      "happiness": 5,
+      "relationship": 8
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_12",
+    "type": "relationship",
+    "description": "Rent an apartment with roommates",
+    "ageIndex": 2,
+    "effects": {
+      "money": -6,
+      "knowledge": 0,
+      "happiness": 4,
+      "relationship": 6
+    },
+    "image": ""
+  },
+  {
+    "id": "age2_13",
+    "type": "money",
+    "description": "Live with your parents to save money",
+    "ageIndex": 2,
+    "effects": {
+      "money": 10,
+      "knowledge": 0,
+      "happiness": -3,
+      "relationship": -2
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_1",
+    "type": "money",
+    "description": "Corporate job with high salary",
+    "ageIndex": 3,
+    "effects": {
+      "money": 15,
+      "knowledge": 0,
+      "happiness": -2,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_2",
+    "type": "knowledge",
+    "description": "Join a startup with potential",
+    "ageIndex": 3,
+    "effects": {
+      "money": 5,
+      "knowledge": 10,
+      "happiness": 5,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_3",
+    "type": "happiness",
+    "description": "Work for a nonprofit organization",
+    "ageIndex": 3,
+    "effects": {
+      "money": 3,
+      "knowledge": 0,
+      "happiness": 10,
+      "relationship": 8
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_4",
+    "type": "money",
+    "description": "You got promoted at work!",
+    "ageIndex": 3,
+    "effects": {
+      "money": 12,
+      "knowledge": 5,
+      "happiness": 8,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_5",
+    "type": "relationship",
+    "description": "Get married",
+    "ageIndex": 3,
+    "effects": {
+      "money": -5,
+      "knowledge": 0,
+      "happiness": 10,
+      "relationship": 15
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_6",
+    "type": "money",
+    "description": "Wait for the right time",
+    "ageIndex": 3,
+    "effects": {
+      "money": 5,
+      "knowledge": 0,
+      "happiness": -2,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_7",
+    "type": "money",
+    "description": "Choose to stay single",
+    "ageIndex": 3,
+    "effects": {
+      "money": 8,
+      "knowledge": 0,
+      "happiness": 3,
+      "relationship": -5
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_8",
+    "type": "money",
+    "description": "Accept the relocation offer",
+    "ageIndex": 3,
+    "effects": {
+      "money": 12,
+      "knowledge": 8,
+      "happiness": 0,
+      "relationship": -4
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_9",
+    "type": "relationship",
+    "description": "Stay in your current location",
+    "ageIndex": 3,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 4,
+      "relationship": 6
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_10",
+    "type": "money",
+    "description": "Negotiate for remote work options",
+    "ageIndex": 3,
+    "effects": {
+      "money": 6,
+      "knowledge": 5,
+      "happiness": 0,
+      "relationship": 3
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_11",
+    "type": "money",
+    "description": "You've experienced a setback in your career",
+    "ageIndex": 3,
+    "effects": {
+      "money": -10,
+      "knowledge": 5,
+      "happiness": -8,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_12",
+    "type": "relationship",
+    "description": "Have children now",
+    "ageIndex": 3,
+    "effects": {
+      "money": -15,
+      "knowledge": 0,
+      "happiness": 10,
+      "relationship": 12
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_13",
+    "type": "money",
+    "description": "Wait a few more years",
+    "ageIndex": 3,
+    "effects": {
+      "money": 8,
+      "knowledge": 5,
+      "happiness": 0,
+      "relationship": -3
+    },
+    "image": ""
+  },
+  {
+    "id": "age3_14",
+    "type": "money",
+    "description": "Decide not to have children",
+    "ageIndex": 3,
+    "effects": {
+      "money": 12,
+      "knowledge": 0,
+      "happiness": 3,
+      "relationship": -6
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_1",
+    "type": "money",
+    "description": "Invest in stocks",
+    "ageIndex": 4,
+    "effects": {
+      "money": 20,
+      "knowledge": 0,
+      "happiness": -3,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_2",
+    "type": "money",
+    "description": "Buy property",
+    "ageIndex": 4,
+    "effects": {
+      "money": 15,
+      "knowledge": 0,
+      "happiness": 5,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_3",
+    "type": "knowledge",
+    "description": "Invest in further education",
+    "ageIndex": 4,
+    "effects": {
+      "money": -10,
+      "knowledge": 15,
+      "happiness": 0,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_4",
+    "type": "happiness",
+    "description": "You took your family on a wonderful vacation",
+    "ageIndex": 4,
+    "effects": {
+      "money": -8,
+      "knowledge": 0,
+      "happiness": 12,
+      "relationship": 10
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_5",
+    "type": "happiness",
+    "description": "You're experiencing some health problems",
+    "ageIndex": 4,
+    "effects": {
+      "money": -5,
+      "knowledge": 0,
+      "happiness": -10,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_6",
+    "type": "knowledge",
+    "description": "Start a completely new career path",
+    "ageIndex": 4,
+    "effects": {
+      "money": -10,
+      "knowledge": 15,
+      "happiness": 12,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_7",
+    "type": "money",
+    "description": "Stay in your current career but seek advancement",
+    "ageIndex": 4,
+    "effects": {
+      "money": 10,
+      "knowledge": 5,
+      "happiness": 3,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_8",
+    "type": "money",
+    "description": "Start a side business while keeping your job",
+    "ageIndex": 4,
+    "effects": {
+      "money": 8,
+      "knowledge": 10,
+      "happiness": 6,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_9",
+    "type": "happiness",
+    "description": "Your children have achieved significant milestones",
+    "ageIndex": 4,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 15,
+      "relationship": 8
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_10",
+    "type": "money",
+    "description": "Downsize to a smaller home",
+    "ageIndex": 4,
+    "effects": {
+      "money": 15,
+      "knowledge": 0,
+      "happiness": 5,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_11",
+    "type": "happiness",
+    "description": "Renovate your current home",
+    "ageIndex": 4,
+    "effects": {
+      "money": -10,
+      "knowledge": 0,
+      "happiness": 10,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age4_12",
+    "type": "happiness",
+    "description": "Upgrade to your dream home",
+    "ageIndex": 4,
+    "effects": {
+      "money": -20,
+      "knowledge": 0,
+      "happiness": 15,
+      "relationship": 5
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_1",
+    "type": "happiness",
+    "description": "Retire early and enjoy life",
+    "ageIndex": 5,
+    "effects": {
+      "money": -15,
+      "knowledge": 0,
+      "happiness": 12,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_2",
+    "type": "money",
+    "description": "Continue working part-time",
+    "ageIndex": 5,
+    "effects": {
+      "money": 8,
+      "knowledge": 5,
+      "happiness": -2,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_3",
+    "type": "happiness",
+    "description": "Retire and volunteer",
+    "ageIndex": 5,
+    "effects": {
+      "money": -5,
+      "knowledge": 0,
+      "happiness": 10,
+      "relationship": 8
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_4",
+    "type": "relationship",
+    "description": "Your children have given you grandchildren",
+    "ageIndex": 5,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 15,
+      "relationship": 12
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_5",
+    "type": "happiness",
+    "description": "You've discovered a new hobby to fill your time",
+    "ageIndex": 5,
+    "effects": {
+      "money": 0,
+      "knowledge": 5,
+      "happiness": 8,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_6",
+    "type": "relationship",
+    "description": "Move to a retirement community",
+    "ageIndex": 5,
+    "effects": {
+      "money": -12,
+      "knowledge": 0,
+      "happiness": 8,
+      "relationship": 10
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_7",
+    "type": "happiness",
+    "description": "Stay in your home with modifications",
+    "ageIndex": 5,
+    "effects": {
+      "money": -5,
+      "knowledge": 0,
+      "happiness": 10,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_8",
+    "type": "relationship",
+    "description": "Move closer to family members",
+    "ageIndex": 5,
+    "effects": {
+      "money": -8,
+      "knowledge": 0,
+      "happiness": 7,
+      "relationship": 15
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_9",
+    "type": "happiness",
+    "description": "You're dealing with some age-related health challenges",
+    "ageIndex": 5,
+    "effects": {
+      "money": -10,
+      "knowledge": 0,
+      "happiness": -8,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_10",
+    "type": "happiness",
+    "description": "Travel the world extensively",
+    "ageIndex": 5,
+    "effects": {
+      "money": -18,
+      "knowledge": 12,
+      "happiness": 15,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_11",
+    "type": "happiness",
+    "description": "Take occasional trips within the country",
+    "ageIndex": 5,
+    "effects": {
+      "money": -8,
+      "knowledge": 5,
+      "happiness": 8,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age5_12",
+    "type": "relationship",
+    "description": "Focus on local activities and community",
+    "ageIndex": 5,
+    "effects": {
+      "money": -3,
+      "knowledge": 0,
+      "happiness": 7,
+      "relationship": 12
+    },
+    "image": ""
+  },
+  {
+    "id": "age6_1",
+    "type": "happiness",
+    "description": "Donate to charity",
+    "ageIndex": 6,
+    "effects": {
+      "money": -20,
+      "knowledge": 0,
+      "happiness": 15,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age6_2",
+    "type": "relationship",
+    "description": "Leave everything to family",
+    "ageIndex": 6,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 10,
+      "relationship": 15
+    },
+    "image": ""
+  },
+  {
+    "id": "age6_3",
+    "type": "knowledge",
+    "description": "Write your memoirs",
+    "ageIndex": 6,
+    "effects": {
+      "money": 0,
+      "knowledge": 15,
+      "happiness": 8,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age6_4",
+    "type": "relationship",
+    "description": "Your entire family gathered to celebrate you",
+    "ageIndex": 6,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 20,
+      "relationship": 15
+    },
+    "image": ""
+  },
+  {
+    "id": "age6_5",
+    "type": "knowledge",
+    "description": "You reflect on your life journey",
+    "ageIndex": 6,
+    "effects": {
+      "money": 0,
+      "knowledge": 10,
+      "happiness": 8,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age6_6",
+    "type": "happiness",
+    "description": "Seek advanced medical treatments",
+    "ageIndex": 6,
+    "effects": {
+      "money": -15,
+      "knowledge": 0,
+      "happiness": 5,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age6_7",
+    "type": "happiness",
+    "description": "Focus on comfort and quality of life",
+    "ageIndex": 6,
+    "effects": {
+      "money": 0,
+      "knowledge": 0,
+      "happiness": 12,
+      "relationship": 8
+    },
+    "image": ""
+  },
+  {
+    "id": "age6_8",
+    "type": "knowledge",
+    "description": "Try holistic and alternative approaches",
+    "ageIndex": 6,
+    "effects": {
+      "money": -5,
+      "knowledge": 8,
+      "happiness": 7,
+      "relationship": 0
+    },
+    "image": ""
+  },
+  {
+    "id": "age6_9",
+    "type": "happiness",
+    "description": "You've lost a close friend from your generation",
+    "ageIndex": 6,
+    "effects": {
+      "money": 0,
+      "knowledge": 5,
+      "happiness": -10,
+      "relationship": -5
+    },
+    "image": ""
+  }
+]

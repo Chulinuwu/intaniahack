@@ -23,11 +23,10 @@
 
     // รายการ topic ที่ host สามารถเลือกได้
     const topics = [
-        "General Knowledge",
-        "Movies",
-        "Music",
-        "Science",
-        "Custom"
+        "GET THE MOST Money",
+        "GET THE MOST Happiness",
+        "GET THE MOST Knowledge",
+        "GET THE MOST Relationship"
     ];
 
     onMount(async () => {
@@ -69,7 +68,7 @@
         if (ws) {
             ws.send(JSON.stringify({ event: "start_game", room_id: roomId }));
         }
-        goto(`/testlobby/${roomId}`);
+        goto(`/join/${roomId}`);
     }
 
     /**
@@ -97,7 +96,7 @@
             gameStatus = data.message;
         }
         if (data.event === 'start_game') {
-            goto(`/testlobby/${data.room_id}`);
+            goto(`/join/${data.room_id}`);
         }
     }
 
@@ -108,7 +107,7 @@
 
 <div class="min-h-screen flex items-center justify-center bg-gray-100">
     <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Test Lobby</h1>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Lobby</h1>
 
         {#if error}
             <p class="text-red-500 text-sm mb-4 text-center">{error}</p>
