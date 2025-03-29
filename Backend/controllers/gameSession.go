@@ -210,7 +210,7 @@ func startPlayerTurn(room *models.Room, playerIndex int) {
 }
 
 // HandlePlayerChoice processes a player's choice
-func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eventID string) {
+func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eventID string, eventIDs []string) {
 	if room == nil {
 		// fmt.Println("Error: Room is nil in HandlePlayerChoice")
 		return
@@ -236,9 +236,91 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 		return
 	}
 
-	// Find the event that matches the event ID
+	// ตรวจสอบว่ามี eventIDs หรือไม่
+	if len(eventIDs) > 0 {
+		// กรณีมีหลาย event_id
+		var lastEvent models.Event
+		var lastChoiceID string = choiceID
+
+		// ดำเนินการกับทุก event_id ใน array
+		for i, evID := range eventIDs {
+			event, choice := handleSingleEvent(gameState, playerIndex, choiceID, evID)
+			
+			// บันทึก event และ choice สุดท้ายเพื่อใช้ใน broadcastTurnResult
+			if i == len(eventIDs)-1 {
+				lastEvent = event
+				if choice != "" {
+					lastChoiceID = choice
+				}
+			}
+		}
+		
+		// ส่ง turn result ของ event สุดท้ายเท่านั้น
+		broadcastTurnResult(room, gameState, playerIndex, lastEvent, lastChoiceID)
+	} else {
+		// กรณีมี event_id เดียว (รูปแบบเดิม)
+		var currentEvent models.Event
+		var found bool
+
+		for _, ageEvents := range models.EventsDB {
+			if ageEvents.AgeIndex == gameState.CurrentAge {
+				for _, event := range ageEvents.Events {
+					if event.ID == eventID {
+						currentEvent = event
+						found = true
+						break
+					}
+				}
+				if found {
+					break
+				}
+			}
+		}
+		// fmt.Println("Current Event:", currentEvent)
+		// fmt.Println("Found:", found)
+
+		if !found {
+			// Event not found, use a default effect
+			ApplyEffectToPlayer(&gameState.Players[playerIndex], models.Effect{Stat: "happiness", Value: 2})
+		} else {
+			// If this is a choice event, find the selected choice
+			if currentEvent.Type == "choice" {
+				for _, choice := range currentEvent.Choices {
+					if choice.ID == choiceID {
+						// Apply all effects from this choice
+						for _, effect := range choice.Effects {
+							ApplyEffectToPlayer(&gameState.Players[playerIndex], effect)
+						}
+						break
+					}
+				}
+			} else {
+				// For non-choice events, apply the default effects
+				for _, effect := range currentEvent.Effects {
+					ApplyEffectToPlayer(&gameState.Players[playerIndex], effect)
+				}
+			}
+
+			// Add this event to the player's history
+			if gameState.Players[playerIndex].Events == nil {
+				gameState.Players[playerIndex].Events = make(map[int][]models.Event)
+			}
+			gameState.Players[playerIndex].Events[gameState.CurrentAge] = append(
+				gameState.Players[playerIndex].Events[gameState.CurrentAge],
+				currentEvent,
+			)
+		}
+
+		// Broadcast the turn result to all players
+		broadcastTurnResult(room, gameState, playerIndex, currentEvent, choiceID)
+	}
+}
+
+// ฟังก์ชันใหม่: handleSingleEvent จัดการกับแต่ละ event แยกออกมาเพื่อให้โค้ดอ่านง่ายขึ้น
+func handleSingleEvent(gameState *models.GameState, playerIndex int, choiceID string, eventID string) (models.Event, string) {
 	var currentEvent models.Event
 	var found bool
+	var actualChoiceID string = choiceID
 
 	for _, ageEvents := range models.EventsDB {
 		if ageEvents.AgeIndex == gameState.CurrentAge {
@@ -254,8 +336,6 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 			}
 		}
 	}
-	// fmt.Println("Current Event:", currentEvent)
-	// fmt.Println("Found:", found)
 
 	if !found {
 		// Event not found, use a default effect
@@ -263,14 +343,30 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 	} else {
 		// If this is a choice event, find the selected choice
 		if currentEvent.Type == "choice" {
-			for _, choice := range currentEvent.Choices {
-				if choice.ID == choiceID {
-					// Apply all effects from this choice
-					for _, effect := range choice.Effects {
-						ApplyEffectToPlayer(&gameState.Players[playerIndex], effect)
+			var choiceFound bool = false
+			
+			// หากมี choiceID ให้ใช้ตาม
+			if choiceID != "" {
+				for _, choice := range currentEvent.Choices {
+					if choice.ID == choiceID {
+						// Apply all effects from this choice
+						for _, effect := range choice.Effects {
+							ApplyEffectToPlayer(&gameState.Players[playerIndex], effect)
+						}
+						choiceFound = true
+						actualChoiceID = choiceID
+						break
 					}
-					break
 				}
+			}
+			
+			// ถ้าไม่พบ choice หรือไม่ได้ระบุ choiceID ให้ใช้ตัวเลือกแรก
+			if !choiceFound && len(currentEvent.Choices) > 0 {
+				choice := currentEvent.Choices[0]
+				for _, effect := range choice.Effects {
+					ApplyEffectToPlayer(&gameState.Players[playerIndex], effect)
+				}
+				actualChoiceID = choice.ID
 			}
 		} else {
 			// For non-choice events, apply the default effects
@@ -288,13 +384,8 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 			currentEvent,
 		)
 	}
-
-	// Update game state in Redis
-	// jsonData, _ := json.Marshal(gameState)
-	// config.RedisClient.Set(ctx, fmt.Sprintf("game:%s", gameState.GameID), jsonData, 24*time.Hour)
-
-	// Broadcast the turn result to all players
-	broadcastTurnResult(room, gameState, playerIndex, currentEvent, choiceID)
+	
+	return currentEvent, actualChoiceID
 }
 
 func scheduleNextTurn(room *models.Room, nextPlayerIndex int) {

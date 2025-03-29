@@ -72,6 +72,85 @@ func InitEvents() {
 					{Stat: "relationship", Value: 5},
 				},
 			},
+			{
+				ID:          "age0_4",
+				Type:        "choice",
+				Title:       "School Competition",
+				Description: "There's a competition at school. What would you like to participate in?",
+				AgeIndex:    0,
+				Choices: []Choice{
+					{
+						ID:          "spelling",
+						Description: "Spelling Bee",
+						Effects: []Effect{
+							{Stat: "knowledge", Value: 7},
+							{Stat: "happiness", Value: 3},
+						},
+					},
+					{
+						ID:          "sports_competition",
+						Description: "Sports Competition",
+						Effects: []Effect{
+							{Stat: "happiness", Value: 6},
+							{Stat: "relationship", Value: 4},
+						},
+					},
+					{
+						ID:          "art",
+						Description: "Art Contest",
+						Effects: []Effect{
+							{Stat: "knowledge", Value: 4},
+							{Stat: "happiness", Value: 5},
+						},
+					},
+				},
+			},
+			{
+				ID:          "age0_5",
+				Type:        "negative",
+				Title:       "Childhood Illness",
+				Description: "You've caught a bad flu and need to stay home from school",
+				AgeIndex:    0,
+				Effects: []Effect{
+					{Stat: "happiness", Value: -4},
+					{Stat: "knowledge", Value: -2},
+				},
+			},
+			{
+				ID:          "age0_6",
+				Type:        "choice",
+				Title:       "Birthday Party",
+				Description: "It's your birthday! How would you like to celebrate?",
+				AgeIndex:    0,
+				Choices: []Choice{
+					{
+						ID:          "big_party",
+						Description: "Have a big party with all your classmates",
+						Effects: []Effect{
+							{Stat: "happiness", Value: 8},
+							{Stat: "relationship", Value: 6},
+							{Stat: "money", Value: -3},
+						},
+					},
+					{
+						ID:          "family_only",
+						Description: "Quiet celebration with family",
+						Effects: []Effect{
+							{Stat: "happiness", Value: 5},
+							{Stat: "relationship", Value: 3},
+						},
+					},
+					{
+						ID:          "theme_park",
+						Description: "Visit a theme park with your best friends",
+						Effects: []Effect{
+							{Stat: "happiness", Value: 10},
+							{Stat: "relationship", Value: 4},
+							{Stat: "money", Value: -5},
+						},
+					},
+				},
+			},
 		},
 	}
 
@@ -132,6 +211,86 @@ func InitEvents() {
 				Effects: []Effect{
 					{Stat: "happiness", Value: -4},
 					{Stat: "relationship", Value: -3},
+				},
+			},
+			{
+				ID:          "age1_4",
+				Type:        "choice",
+				Title:       "School Dance",
+				Description: "The school dance is coming up. What will you do?",
+				AgeIndex:    1,
+				Choices: []Choice{
+					{
+						ID:          "ask_crush",
+						Description: "Ask your crush to be your date",
+						Effects: []Effect{
+							{Stat: "relationship", Value: 8},
+							{Stat: "happiness", Value: 7},
+						},
+					},
+					{
+						ID:          "go_friends",
+						Description: "Go with a group of friends",
+						Effects: []Effect{
+							{Stat: "relationship", Value: 5},
+							{Stat: "happiness", Value: 5},
+						},
+					},
+					{
+						ID:          "skip_dance",
+						Description: "Skip the dance to study",
+						Effects: []Effect{
+							{Stat: "knowledge", Value: 7},
+							{Stat: "relationship", Value: -2},
+						},
+					},
+				},
+			},
+			{
+				ID:          "age1_5",
+				Type:        "positive",
+				Title:       "Found a Hobby",
+				Description: "You discovered a hobby that you're passionate about",
+				AgeIndex:    1,
+				Effects: []Effect{
+					{Stat: "happiness", Value: 8},
+					{Stat: "knowledge", Value: 4},
+				},
+			},
+			{
+				ID:          "age1_6",
+				Type:        "choice",
+				Title:       "Peer Pressure",
+				Description: "Your friends are pressuring you to try something risky. What will you do?",
+				AgeIndex:    1,
+				Choices: []Choice{
+					{
+						ID:          "give_in",
+						Description: "Give in to peer pressure",
+						Effects: []Effect{
+							{Stat: "relationship", Value: 4},
+							{Stat: "happiness", Value: -3},
+							{Stat: "knowledge", Value: 2},
+						},
+					},
+					{
+						ID:          "refuse",
+						Description: "Refuse and stand your ground",
+						Effects: []Effect{
+							{Stat: "relationship", Value: -3},
+							{Stat: "happiness", Value: 2},
+							{Stat: "knowledge", Value: 3},
+						},
+					},
+					{
+						ID:          "compromise",
+						Description: "Suggest a safer alternative",
+						Effects: []Effect{
+							{Stat: "relationship", Value: 2},
+							{Stat: "happiness", Value: 3},
+							{Stat: "knowledge", Value: 4},
+						},
+					},
 				},
 			},
 		},
@@ -205,6 +364,91 @@ func InitEvents() {
 				Effects: []Effect{
 					{Stat: "money", Value: -8},
 					{Stat: "happiness", Value: -3},
+				},
+			},
+			{
+				ID:          "age2_4",
+				Type:        "choice",
+				Title:       "Study Abroad Opportunity",
+				Description: "You have a chance to study abroad for a semester. Will you go?",
+				AgeIndex:    2,
+				Choices: []Choice{
+					{
+						ID:          "go_abroad",
+						Description: "Go study abroad",
+						Effects: []Effect{
+							{Stat: "knowledge", Value: 12},
+							{Stat: "relationship", Value: 4},
+							{Stat: "money", Value: -12},
+							{Stat: "happiness", Value: 8},
+						},
+					},
+					{
+						ID:          "stay_home",
+						Description: "Stay at your current university",
+						Effects: []Effect{
+							{Stat: "knowledge", Value: 6},
+							{Stat: "relationship", Value: 3},
+							{Stat: "money", Value: -4},
+						},
+					},
+					{
+						ID:          "online_program",
+						Description: "Participate in an online international program",
+						Effects: []Effect{
+							{Stat: "knowledge", Value: 8},
+							{Stat: "money", Value: -6},
+							{Stat: "happiness", Value: 4},
+						},
+					},
+				},
+			},
+			{
+				ID:          "age2_5",
+				Type:        "positive",
+				Title:       "Academic Achievement",
+				Description: "You've been recognized for your academic accomplishments",
+				AgeIndex:    2,
+				Effects: []Effect{
+					{Stat: "knowledge", Value: 10},
+					{Stat: "happiness", Value: 7},
+					{Stat: "relationship", Value: 3},
+				},
+			},
+			{
+				ID:          "age2_6",
+				Type:        "choice",
+				Title:       "Living Situation",
+				Description: "You need to decide where to live during your college years",
+				AgeIndex:    2,
+				Choices: []Choice{
+					{
+						ID:          "dorms",
+						Description: "Live in the dormitories",
+						Effects: []Effect{
+							{Stat: "relationship", Value: 8},
+							{Stat: "money", Value: -8},
+							{Stat: "happiness", Value: 5},
+						},
+					},
+					{
+						ID:          "apartment",
+						Description: "Rent an apartment with roommates",
+						Effects: []Effect{
+							{Stat: "relationship", Value: 6},
+							{Stat: "money", Value: -6},
+							{Stat: "happiness", Value: 4},
+						},
+					},
+					{
+						ID:          "parents",
+						Description: "Live with your parents to save money",
+						Effects: []Effect{
+							{Stat: "money", Value: 10},
+							{Stat: "relationship", Value: -2},
+							{Stat: "happiness", Value: -3},
+						},
+					},
 				},
 			},
 		},
@@ -296,6 +540,89 @@ func InitEvents() {
 					},
 				},
 			},
+			{
+				ID:          "age3_4",
+				Type:        "choice",
+				Title:       "Relocation Opportunity",
+				Description: "You have an opportunity to relocate for work",
+				AgeIndex:    3,
+				Choices: []Choice{
+					{
+						ID:          "move",
+						Description: "Accept the relocation offer",
+						Effects: []Effect{
+							{Stat: "money", Value: 12},
+							{Stat: "knowledge", Value: 8},
+							{Stat: "relationship", Value: -4},
+						},
+					},
+					{
+						ID:          "stay",
+						Description: "Stay in your current location",
+						Effects: []Effect{
+							{Stat: "relationship", Value: 6},
+							{Stat: "happiness", Value: 4},
+						},
+					},
+					{
+						ID:          "negotiate",
+						Description: "Negotiate for remote work options",
+						Effects: []Effect{
+							{Stat: "money", Value: 6},
+							{Stat: "knowledge", Value: 5},
+							{Stat: "relationship", Value: 3},
+						},
+					},
+				},
+			},
+			{
+				ID:          "age3_5",
+				Type:        "negative",
+				Title:       "Career Setback",
+				Description: "You've experienced a setback in your career",
+				AgeIndex:    3,
+				Effects: []Effect{
+					{Stat: "money", Value: -10},
+					{Stat: "happiness", Value: -8},
+					{Stat: "knowledge", Value: 5},
+				},
+			},
+			{
+				ID:          "age3_6",
+				Type:        "choice",
+				Title:       "Family Planning",
+				Description: "You and your partner are discussing starting a family",
+				AgeIndex:    3,
+				Choices: []Choice{
+					{
+						ID:          "have_children",
+						Description: "Have children now",
+						Effects: []Effect{
+							{Stat: "relationship", Value: 12},
+							{Stat: "happiness", Value: 10},
+							{Stat: "money", Value: -15},
+						},
+					},
+					{
+						ID:          "wait_children",
+						Description: "Wait a few more years",
+						Effects: []Effect{
+							{Stat: "money", Value: 8},
+							{Stat: "knowledge", Value: 5},
+							{Stat: "relationship", Value: -3},
+						},
+					},
+					{
+						ID:          "no_children",
+						Description: "Decide not to have children",
+						Effects: []Effect{
+							{Stat: "money", Value: 12},
+							{Stat: "relationship", Value: -6},
+							{Stat: "happiness", Value: 3},
+						},
+					},
+				},
+			},
 		},
 	}
 
@@ -357,6 +684,87 @@ func InitEvents() {
 				Effects: []Effect{
 					{Stat: "happiness", Value: -10},
 					{Stat: "money", Value: -5},
+				},
+			},
+			{
+				ID:          "age4_4",
+				Type:        "choice",
+				Title:       "Career Change",
+				Description: "You're considering a mid-life career change",
+				AgeIndex:    4,
+				Choices: []Choice{
+					{
+						ID:          "new_career",
+						Description: "Start a completely new career path",
+						Effects: []Effect{
+							{Stat: "knowledge", Value: 15},
+							{Stat: "money", Value: -10},
+							{Stat: "happiness", Value: 12},
+						},
+					},
+					{
+						ID:          "stay_career",
+						Description: "Stay in your current career but seek advancement",
+						Effects: []Effect{
+							{Stat: "money", Value: 10},
+							{Stat: "knowledge", Value: 5},
+							{Stat: "happiness", Value: 3},
+						},
+					},
+					{
+						ID:          "side_business",
+						Description: "Start a side business while keeping your job",
+						Effects: []Effect{
+							{Stat: "money", Value: 8},
+							{Stat: "knowledge", Value: 10},
+							{Stat: "happiness", Value: 6},
+						},
+					},
+				},
+			},
+			{
+				ID:          "age4_5",
+				Type:        "positive",
+				Title:       "Children's Success",
+				Description: "Your children have achieved significant milestones",
+				AgeIndex:    4,
+				Effects: []Effect{
+					{Stat: "happiness", Value: 15},
+					{Stat: "relationship", Value: 8},
+				},
+			},
+			{
+				ID:          "age4_6",
+				Type:        "choice",
+				Title:       "Living Arrangements",
+				Description: "You're considering changing your living situation",
+				AgeIndex:    4,
+				Choices: []Choice{
+					{
+						ID:          "downsize",
+						Description: "Downsize to a smaller home",
+						Effects: []Effect{
+							{Stat: "money", Value: 15},
+							{Stat: "happiness", Value: 5},
+						},
+					},
+					{
+						ID:          "renovate",
+						Description: "Renovate your current home",
+						Effects: []Effect{
+							{Stat: "money", Value: -10},
+							{Stat: "happiness", Value: 10},
+						},
+					},
+					{
+						ID:          "dream_home",
+						Description: "Upgrade to your dream home",
+						Effects: []Effect{
+							{Stat: "money", Value: -20},
+							{Stat: "happiness", Value: 15},
+							{Stat: "relationship", Value: 5},
+						},
+					},
 				},
 			},
 		},
@@ -423,70 +831,199 @@ func InitEvents() {
 					{Stat: "knowledge", Value: 5},
 				},
 			},
-		},
-	}
-
-	// Age 80-100 (Golden Years)
-	age80_100 := GameEvents{
-		AgeIndex: 6,
-		Events: []Event{
 			{
-				ID:          "age6_1",
+				ID:          "age5_4",
 				Type:        "choice",
-				Title:       "Legacy Planning",
-				Description: "You're thinking about your legacy",
-				AgeIndex:    6,
+				Title:       "Senior Living Options",
+				Description: "You're considering your living arrangements as you age",
+				AgeIndex:    5,
 				Choices: []Choice{
 					{
-						ID:          "charity",
-						Description: "Donate to charity",
+						ID:          "retirement_community",
+						Description: "Move to a retirement community",
 						Effects: []Effect{
-							{Stat: "happiness", Value: 15},
-							{Stat: "money", Value: -20},
+							{Stat: "relationship", Value: 10},
+							{Stat: "happiness", Value: 8},
+							{Stat: "money", Value: -12},
 						},
 					},
 					{
-						ID:          "family",
-						Description: "Leave everything to family",
+						ID:          "stay_home",
+						Description: "Stay in your home with modifications",
 						Effects: []Effect{
-							{Stat: "relationship", Value: 15},
+							{Stat: "money", Value: -5},
 							{Stat: "happiness", Value: 10},
 						},
 					},
 					{
-						ID:          "memoir",
-						Description: "Write your memoirs",
+						ID:          "move_family",
+						Description: "Move closer to family members",
 						Effects: []Effect{
-							{Stat: "knowledge", Value: 15},
-							{Stat: "happiness", Value: 8},
+							{Stat: "relationship", Value: 15},
+							{Stat: "money", Value: -8},
+							{Stat: "happiness", Value: 7},
 						},
 					},
 				},
 			},
 			{
-				ID:          "age6_2",
-				Type:        "positive",
-				Title:       "Family Reunion",
-				Description: "Your entire family gathered to celebrate you",
-				AgeIndex:    6,
+				ID:          "age5_5",
+				Type:        "negative",
+				Title:       "Health Concerns",
+				Description: "You're dealing with some age-related health challenges",
+				AgeIndex:    5,
 				Effects: []Effect{
-					{Stat: "happiness", Value: 20},
-					{Stat: "relationship", Value: 15},
+					{Stat: "happiness", Value: -8},
+					{Stat: "money", Value: -10},
 				},
 			},
 			{
-				ID:          "age6_3",
-				Type:        "neutral",
-				Title:       "Reflection",
-				Description: "You reflect on your life journey",
-				AgeIndex:    6,
-				Effects: []Effect{
-					{Stat: "knowledge", Value: 10},
-					{Stat: "happiness", Value: 8},
+				ID:          "age5_6",
+				Type:        "choice",
+				Title:       "Travel Plans",
+				Description: "You're planning how to spend your retirement leisure time",
+				AgeIndex:    5,
+				Choices: []Choice{
+					{
+						ID:          "world_travel",
+						Description: "Travel the world extensively",
+						Effects: []Effect{
+							{Stat: "happiness", Value: 15},
+							{Stat: "knowledge", Value: 12},
+							{Stat: "money", Value: -18},
+						},
+					},
+					{
+						ID:          "local_travel",
+						Description: "Take occasional trips within the country",
+						Effects: []Effect{
+							{Stat: "happiness", Value: 8},
+							{Stat: "knowledge", Value: 5},
+							{Stat: "money", Value: -8},
+						},
+					},
+					{
+						ID:          "stay_active",
+						Description: "Focus on local activities and community",
+						Effects: []Effect{
+							{Stat: "relationship", Value: 12},
+							{Stat: "happiness", Value: 7},
+							{Stat: "money", Value: -3},
+						},
+					},
 				},
 			},
 		},
 	}
+
+	// Age 80-100 (Golden Years)
+	// Age 80-100 (Golden Years)
+age80_100 := GameEvents{
+	AgeIndex: 6,
+	Events: []Event{
+		{
+			ID:          "age6_1",
+			Type:        "choice",
+			Title:       "Legacy Planning",
+			Description: "You're thinking about your legacy",
+			AgeIndex:    6,
+			Choices: []Choice{
+				{
+					ID:          "charity",
+					Description: "Donate to charity",
+					Effects: []Effect{
+						{Stat: "happiness", Value: 15},
+						{Stat: "money", Value: -20},
+					},
+				},
+				{
+					ID:          "family",
+					Description: "Leave everything to family",
+					Effects: []Effect{
+						{Stat: "relationship", Value: 15},
+						{Stat: "happiness", Value: 10},
+					},
+				},
+				{
+					ID:          "memoir",
+					Description: "Write your memoirs",
+					Effects: []Effect{
+						{Stat: "knowledge", Value: 15},
+						{Stat: "happiness", Value: 8},
+					},
+				},
+			},
+		},
+		{
+			ID:          "age6_2",
+			Type:        "positive",
+			Title:       "Family Reunion",
+			Description: "Your entire family gathered to celebrate you",
+			AgeIndex:    6,
+			Effects: []Effect{
+				{Stat: "happiness", Value: 20},
+				{Stat: "relationship", Value: 15},
+			},
+		},
+		{
+			ID:          "age6_3",
+			Type:        "neutral",
+			Title:       "Reflection",
+			Description: "You reflect on your life journey",
+			AgeIndex:    6,
+			Effects: []Effect{
+				{Stat: "knowledge", Value: 10},
+				{Stat: "happiness", Value: 8},
+			},
+		},
+		{
+			ID:          "age6_4",
+			Type:        "choice",
+			Title:       "Healthcare Decisions",
+			Description: "You need to make important healthcare decisions",
+			AgeIndex:    6,
+			Choices: []Choice{
+				{
+					ID:          "advanced_treatment",
+					Description: "Seek advanced medical treatments",
+					Effects: []Effect{
+						{Stat: "happiness", Value: 5},
+						{Stat: "money", Value: -15},
+					},
+				},
+				{
+					ID:          "comfort_care",
+					Description: "Focus on comfort and quality of life",
+					Effects: []Effect{
+						{Stat: "happiness", Value: 12},
+						{Stat: "relationship", Value: 8},
+					},
+				},
+				{
+					ID:          "holistic",
+					Description: "Try holistic and alternative approaches",
+					Effects: []Effect{
+						{Stat: "knowledge", Value: 8},
+						{Stat: "happiness", Value: 7},
+						{Stat: "money", Value: -5},
+					},
+				},
+			},
+		},
+		{
+			ID:          "age6_5",
+			Type:        "negative",
+			Title:       "Loss of a Friend",
+			Description: "You've lost a close friend from your generation",
+			AgeIndex:    6,
+			Effects: []Effect{
+				{Stat: "happiness", Value: -10},
+				{Stat: "relationship", Value: -5},
+				{Stat: "knowledge", Value: 5},
+			},
+		},
+	},
+}
 
 	// Add all age ranges to the database
 	EventsDB = []GameEvents{

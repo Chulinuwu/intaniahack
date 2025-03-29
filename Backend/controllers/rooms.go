@@ -269,16 +269,38 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 			break
 		}
 
-		// Parse ข้อความเพื่อตรวจสอบ event
+		// ปรับโครงสร้างให้รองรับ eventIDs
 		var msgData struct {
-			Event       string `json:"event"`
-			RoomID      string `json:"room_id"`
-			EventID     string `json:"event_id"`
-			ChoiceID    string `json:"choice_id"`
-			PlayerIndex int    `json:"player_index"`
+			Event       string   `json:"event"`
+			RoomID      string   `json:"room_id"`
+			EventID     string   `json:"event_id"`     // รูปแบบเดิม
+			EventIDs    []string `json:"event_ids"`    // รูปแบบใหม่ (array)
+			ChoiceID    string   `json:"choice_id"`
+			PlayerIndex int      `json:"player_index"`
+			Data        map[string]interface{} `json:"data"` // สำหรับรูปแบบที่มี data object
 		}
+		
 		if err := json.Unmarshal(message, &msgData); err == nil {
 			fmt.Println("Parsed message data:", msgData)
+
+			// ถ้ามี data object ให้ตรวจสอบ event_ids ภายใน
+			var eventIDs []string
+			if msgData.Data != nil {
+				if eventIDsData, ok := msgData.Data["event_ids"]; ok {
+					if ids, ok := eventIDsData.([]interface{}); ok {
+						for _, id := range ids {
+							if strID, ok := id.(string); ok {
+								eventIDs = append(eventIDs, strID)
+							}
+						}
+					}
+				}
+			}
+			
+			// ถ้าไม่มี eventIDs จาก data ให้ใช้จาก eventIDs โดยตรง
+			if len(eventIDs) == 0 {
+				eventIDs = msgData.EventIDs
+			}
 
 			// Get the room
 			roomsMutex.Lock()
@@ -307,10 +329,11 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 							debug.PrintStack()
 						}
 					}()
-					HandlePlayerChoice(room, msgData.PlayerIndex, msgData.ChoiceID, msgData.EventID)
+					
+					// เรียกใช้ HandlePlayerChoice ด้วย eventIDs
+					HandlePlayerChoice(room, msgData.PlayerIndex, msgData.ChoiceID, msgData.EventID, eventIDs)
 
 					// Check if this completes a round of turns
-
 					checkAgeProgression(room, msgData.PlayerIndex)
 
 					// Schedule the next turn
