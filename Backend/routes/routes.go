@@ -35,5 +35,6 @@ func SetupRoutes(r *gin.Engine) {
     auth.GET("/users/:id", controllers.GetUserByID)
     auth.DELETE("/users/:id", controllers.DeleteUser)
 
-    r.GET("/ws/:roomID", controllers.WebSocketHandler)
+    r.GET("/host", middlewares.AuthMiddleware(), controllers.HostGame)
+    r.GET("/join", middlewares.AuthMiddleware(), controllers.JoinGame)
 }
