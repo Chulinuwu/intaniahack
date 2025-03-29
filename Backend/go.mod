@@ -4,7 +4,13 @@ go 1.23.0
 
 toolchain go1.23.7
 
-require gorm.io/gorm v1.25.12
+require (
+	github.com/gin-contrib/cors v1.7.4
+	github.com/gorilla/websocket v1.5.3
+	github.com/joho/godotenv v1.5.1
+	golang.org/x/crypto v0.36.0
+	gorm.io/gorm v1.25.12
+)
 
 require (
 	dario.cat/mergo v1.0.1 // indirect
@@ -21,7 +27,6 @@ require (
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
-	github.com/gin-contrib/cors v1.7.4 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -29,12 +34,10 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.4 // indirect
 	github.com/gohugoio/hugo v0.134.3 // indirect
-	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.5.5 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -50,7 +53,6 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.12.0 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
@@ -59,7 +61,7 @@ require (
 )
 
 require (
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/uuid v1.6.0
 	github.com/jinzhu/inflection v1.0.0 // indirect
