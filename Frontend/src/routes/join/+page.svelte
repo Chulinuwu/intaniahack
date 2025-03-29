@@ -1,8 +1,6 @@
 <script lang="ts">
     import CompetiterCard from "../../components/CompetiterCard.svelte";
     import PlayCard from "../../components/PlayCard.svelte";
-    import { colorMap } from '$lib/utils/colorMap';
-    import { iconMap } from '$lib/utils/iconMap';
     import { iconMapColor } from '$lib/utils/iconMapColor';
     import TimeLeft from "../../components/TimeLeft.svelte";
 
@@ -41,63 +39,83 @@
         { label: "80 - 100", data: droppedCards80_100 }
     ];
 
-    function handleDragStart(event: DragEvent, card: any, index: number, source: 'hand' | 'dropzone') {
-        draggedCard = card;
-        draggedIndex = index;
-        dragSource = source;
-        dragAgeIndex = source === 'dropzone' ? currentAgeIndex : null;
-        event.dataTransfer?.setData('text/plain', '');
-    }
+    let selectedCard: any = null;
+    let selectedCardIndex: number | null = null;
+    let selectedCardSource: 'hand' | 'dropzone' | null = null;
+    let selectedAgeIndex: number | null = null; // สำหรับการ์ดจาก dropzone
 
-    function handleDrop(event: DragEvent, dropIndex: number) {
-        if (draggedCard) {
-            // ถ้ามาจาก handCards
-            if (dragSource === 'hand' && draggedIndex !== null) {
-                // ลบการ์ดออกจาก hand
-                handCards = handCards.filter((_, i) => i !== draggedIndex);
-                
-                // วางการ์ดใน drop zone ของช่วงอายุปัจจุบัน
-                currentAge.data[dropIndex] = draggedCard;
-            } 
-            // ถ้ามาจาก drop zone ของช่วงอายุอื่น
-            else if (dragSource === 'dropzone' && draggedIndex !== null && dragAgeIndex !== null) {
-                // ย้ายการ์ดจากช่วงอายุเดิมมาช่วงอายุปัจจุบัน
-                ageRanges[dragAgeIndex].data[draggedIndex] = null;
-                currentAge.data[dropIndex] = draggedCard;
-            }
-            
-            // อัปเดต UI ด้วยการ reassign arrays
-            handCards = handCards;
-            ageRanges.forEach(age => {
-                age.data = [...age.data];
-            });
+    // ฟังก์ชันเลือกการ์ด
+    function selectCard(card: any, index: number, source: 'hand' | 'dropzone', ageIndex: number | null = null) {
+        // ถ้ากดการ์ดที่เลือกอยู่แล้ว ให้ยกเลิกการเลือก
+        if (selectedCardIndex === index && selectedCardSource === source && selectedAgeIndex === ageIndex) {
+            selectedCard = null;
+            selectedCardIndex = null;
+            selectedCardSource = null;
+            selectedAgeIndex = null;
+        } else {
+            selectedCard = card;
+            selectedCardIndex = index;
+            selectedCardSource = source;
+            selectedAgeIndex = ageIndex;
         }
-        resetDragState();
     }
 
-    function handleTrashDrop() {
-        if (draggedCard && draggedIndex !== null) {
-            if (dragSource === 'hand') {
-                handCards = handCards.filter((_, i) => i !== draggedIndex);
-            } 
-            else if (dragSource === 'dropzone' && dragAgeIndex !== null) {
-                ageRanges[dragAgeIndex].data[draggedIndex] = null;
-                ageRanges[dragAgeIndex].data = [...ageRanges[dragAgeIndex].data];
+    // ฟังก์ชันย้ายการ์ดไปยังช่องที่เลือก
+    function moveCardToSlot(slotIndex: number) {
+        if (!selectedCard || selectedCardSource === null) return;
+
+        // ย้ายจาก hand ไปยัง dropzone
+        if (selectedCardSource === 'hand' && selectedCardIndex !== null) {
+            // ตรวจสอบว่าช่องเป้าหมายว่างไหม
+            if (!currentAge.data[slotIndex]) {
+                // ย้ายการ์ด
+                handCards = handCards.filter((_, i) => i !== selectedCardIndex);
+                currentAge.data[slotIndex] = selectedCard;
             }
-            handCards = handCards;
         }
-        resetDragState();
+        // ย้ายระหว่าง dropzone
+        else if (selectedCardSource === 'dropzone' && selectedCardIndex !== null && selectedAgeIndex !== null) {
+            // ตรวจสอบว่าช่องเป้าหมายว่างไหม
+            if (!currentAge.data[slotIndex]) {
+                // ย้ายการ์ด
+                ageRanges[selectedAgeIndex].data[selectedCardIndex] = null;
+                currentAge.data[slotIndex] = selectedCard;
+            }
+        }
+
+        // รีเซ็ตการเลือก
+        resetSelection();
     }
 
-    function resetDragState() {
-        draggedCard = null;
-        draggedIndex = null;
-        dragSource = null;
-        dragAgeIndex = null;
+    // ฟังก์ชันทิ้งการ์ด
+    function trashCard() {
+        if (!selectedCard || selectedCardSource === null) return;
+
+        // ถ้ามาจาก hand
+        if (selectedCardSource === 'hand' && selectedCardIndex !== null) {
+            handCards = handCards.filter((_, i) => i !== selectedCardIndex);
+        }
+        // ถ้ามาจาก dropzone
+        else if (selectedCardSource === 'dropzone' && selectedCardIndex !== null && selectedAgeIndex !== null) {
+            ageRanges[selectedAgeIndex].data[selectedCardIndex] = null;
+        }
+
+        // รีเซ็ตการเลือก
+        resetSelection();
     }
 
-    function handleDragEnd() {
-        draggedCard = null;
+    // รีเซ็ตการเลือกการ์ด
+    function resetSelection() {
+        selectedCard = null;
+        selectedCardIndex = null;
+        selectedCardSource = null;
+        selectedAgeIndex = null;
+        
+        // อัปเดต UI
+        handCards = handCards;
+        ageRanges.forEach(age => {
+            age.data = [...age.data];
+        });
     }
 
 
@@ -197,23 +215,30 @@
             <!-- Drop Zones สำหรับช่วงอายุปัจจุบัน -->
             <div class="flex mt-2 gap-3 min-h-[160px]">
                 {#each currentAge.data as card, i}
-                    <div 
-                        class="w-24 h-32 border-2 border-dashed border-white rounded-md flex items-center justify-center"
-                        on:drop|preventDefault={e => handleDrop(e, i)}
-                        on:dragover|preventDefault
-                    >
-                        {#if card}
-                            <div
-                                draggable="true"
-                                on:dragstart={(e) => handleDragStart(e, card, i, 'dropzone')}
-                                on:dragend={resetDragState}
-                                class="cursor-move"
-                            >
-                                <PlayCard {...card} />
-                            </div>
-                        {/if}
-                    </div>
-                {/each}
+        <div 
+            class="w-24 h-32 border-2 border-dashed border-white rounded-md flex items-center justify-center cursor-pointer"
+            on:click={() => {
+                if (card) {
+                    // ถ้ามีการ์ดอยู่แล้ว ให้เลือกการ์ดนั้น
+                    selectCard(card, i, 'dropzone', currentAgeIndex);
+                } else if (selectedCard) {
+                    // ถ้าไม่มีการ์ดแต่มีการ์ดเลือกอยู่ ให้ย้ายการ์ดมาที่นี่
+                    moveCardToSlot(i);
+                }
+            }}
+            class:bg-gray-700={selectedCard && !card}
+        >
+            {#if card}
+                <div
+                    on:click|stopPropagation={() => selectCard(card, i, 'dropzone', currentAgeIndex)}
+                    class:scale-110={selectedCardIndex === i && selectedCardSource === 'dropzone' && selectedAgeIndex === currentAgeIndex}
+                    class="transition-transform duration-200"
+                >
+                    <PlayCard {...card} />
+                </div>
+            {/if}
+        </div>
+    {/each}
             </div>
         </div>
         <button 
@@ -303,14 +328,11 @@
             <div class="flex gap-2 w-[530px] h-[114px] bg-[#474848] border border-white rounded-md items-center justify-center">
                 {#each handCards as card, index}
                     <div 
-                        draggable="true"
-                        on:dragstart={(e) => handleDragStart(e, card, index, 'hand')}
-                        on:dragend={handleDragEnd}
-                        style="cursor: grab;"
+                        on:click={() => selectCard(card, index, 'hand')}
+                        class:scale-110={selectedCardIndex === index && selectedCardSource === 'hand'}
+                        class="transition-transform duration-200 cursor-pointer"
                     >
-                        <PlayCard
-                            {...card}
-                        />
+                        <PlayCard {...card} />
                     </div>
                 {/each}
             </div>
@@ -338,22 +360,20 @@
                     </div>
                 </div>
                 <div 
-                    class="w-[75px] relative cursor-pointer"
-                    on:drop|preventDefault={handleTrashDrop}
-                    on:dragover|preventDefault
-                    class:active={draggedCard !== null}
-                >
-                    <img 
-                        src="src/lib/assets/image/play/bin.svg" 
-                        alt="bin" 
-                        class="w-full h-[73px] transition-all duration-200"
-                        class:scale-110={draggedCard !== null}
-                    />
-                    {#if draggedCard}
-                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        </div>
-                    {/if}
-                </div>
+                class="w-[75px] relative cursor-pointer transition-transform duration-200"
+                on:click={trashCard}
+                class:scale-110={selectedCard !== null}
+            >
+                <img 
+                    src="src/lib/assets/image/play/bin.svg" 
+                    alt="bin" 
+                    class="w-full h-[73px]"
+                />
+                {#if selectedCard}
+                    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    </div>
+                {/if}
+            </div>
             </div>
         </div>
     </div>
