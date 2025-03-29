@@ -16,9 +16,6 @@
   }
 
   // เพิ่มตัวแปรสำหรับระบบ drag and drop
-  let dropZones: HTMLDivElement[] = [];
-  let draggedCard: any = null;
-  let draggedIndex: number | null = null;
   let droppedCards0_12: any[] = Array(5).fill(null);
   let droppedCards13_18: any[] = Array(5).fill(null);
   let droppedCards19_22: any[] = Array(5).fill(null);
@@ -26,8 +23,6 @@
   let droppedCards40_59: any[] = Array(5).fill(null);
   let droppedCards60_79: any[] = Array(5).fill(null);
   let droppedCards80_100: any[] = Array(5).fill(null);
-  let dragSource: 'hand' | 'dropzone' | null = null;
-  let dragAgeIndex: number | null = null; // เพิ่มตัวแปรเก็บว่า dragging จากช่วงอายุไหน
 
   let ageRanges = [
       { label: "0 - 12", data: droppedCards0_12 },
@@ -106,17 +101,18 @@
 
   // รีเซ็ตการเลือกการ์ด
   function resetSelection() {
-      selectedCard = null;
-      selectedCardIndex = null;
-      selectedCardSource = null;
-      selectedAgeIndex = null;
-      
-      // อัปเดต UI
-      handCards = handCards;
-      ageRanges.forEach(age => {
-          age.data = [...age.data];
-      });
-  }
+    selectedCard = null;
+    selectedCardIndex = null;
+    selectedCardSource = null;
+    selectedAgeIndex = null;
+    
+    // อัปเดต UI
+    handCards = handCards;
+    ageRanges = ageRanges.map(age => ({
+        ...age,
+        data: [...age.data]
+    }));
+}
 
 
   let handCards = [
@@ -320,17 +316,40 @@
                   </div>
               </div>
           </div>
-          <div class="flex gap-2 w-[530px] h-[114px] bg-[#474848] border border-white rounded-md items-center justify-center">
-              {#each handCards as card, index}
-                  <div 
-                      on:click={() => selectCard(card, index, 'hand')}
-                      class:scale-110={selectedCardIndex === index && selectedCardSource === 'hand'}
-                      class="transition-transform duration-200 cursor-pointer"
-                  >
-                      <PlayCard {...card} />
-                  </div>
-              {/each}
-          </div>
+          <div 
+            class="flex gap-2 w-[530px] h-[114px] bg-[#474848] border border-white rounded-md items-center justify-center cursor-pointer relative"
+            on:click={(e) => {
+                const target = e.target as HTMLElement; // เพิ่ม type assertion
+                // ถ้ามีการ์ดที่เลือกอยู่และคลิกที่พื้นหลัง (ไม่ใช่การ์ด)
+                if (selectedCard && !target.closest('.play-card-container')) {
+                    // ถ้าการ์ดมาจาก dropzone
+                    if (selectedCardSource === 'dropzone' && selectedCardIndex !== null && selectedAgeIndex !== null) {
+                        // ย้ายการ์ดกลับมาที่มือ
+                        handCards = [...handCards, selectedCard];
+                        ageRanges[selectedAgeIndex].data[selectedCardIndex] = null;
+                    }
+                    resetSelection();
+                }
+            }}
+            class:bg-[#5a5b5b]={selectedCard && selectedCardSource === 'dropzone'}
+        >
+            {#each handCards as card, index}
+                <div 
+                    class="play-card-container transition-transform duration-200 cursor-pointer" 
+                    on:click|stopPropagation={() => selectCard(card, index, 'hand')}
+                    class:scale-110={selectedCardIndex === index && selectedCardSource === 'hand'}
+                >
+                    <PlayCard {...card} />
+                </div>
+            {/each}
+            
+            <!-- แสดงข้อความเมื่อไม่มีการ์ดและมีการ์ดเลือกจาก dropzone -->
+            {#if handCards.length === 0 && selectedCard && selectedCardSource === 'dropzone'}
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span class="text-white text-sm opacity-70">วางการ์ดที่นี่</span>
+                </div>
+            {/if}
+        </div>
       </div>
       <div class="flex flex-col gap-2 items-center justify-center">
           <div class="flex gap-2">
@@ -355,20 +374,20 @@
                   </div>
               </div>
               <div 
-              class="w-[75px] relative cursor-pointer transition-transform duration-200"
-              on:click={trashCard}
-              class:scale-110={selectedCard !== null}
-          >
-              <img 
-                  src="src/lib/assets/image/play/bin.svg" 
-                  alt="bin" 
-                  class="w-full h-[73px]"
-              />
-              {#if selectedCard}
-                  <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  </div>
-              {/if}
-          </div>
+                    class="w-[75px] relative cursor-pointer transition-transform duration-200"
+                    on:click={trashCard}
+                    class:scale-110={selectedCard !== null}
+                >
+                    <img 
+                        src="src/lib/assets/image/play/bin.svg" 
+                        alt="bin" 
+                        class="w-full h-[73px]"
+                    />
+                    {#if selectedCard}
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        </div>
+                    {/if}
+                </div>
           </div>
       </div>
   </div>
