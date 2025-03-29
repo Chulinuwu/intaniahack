@@ -36,8 +36,8 @@
 <div class="min-h-screen flex items-center justify-center relative" style={`background-image: url('${bg}'); background-size: cover; background-position: center; background-color: rgba(0, 0, 0, 0.5); background-blend-mode: darken;`}>
     <!-- Modal box -->
     <div class="relative w-full h-screen flex items-center justify-center">
-        <div class="absolute h-[20rem] w-[26rem] bg-gray-800 rounded-md shadow-xl max-w-md border border-white z-10"></div>
-        <div class="bg-gray-800 text-white px-10 py-8 rounded-md shadow-xl relative w-full max-w-md border border-white z-20">
+        <div class="absolute h-[20rem] w-[26rem] bg-[#474848] shadow-xl max-w-md border border-white z-10"></div>
+        <div class="bg-[#474848] text-white px-10 py-8 shadow-xl relative w-full max-w-md border border-white z-20">
           
           <!-- Close button -->
           <button 
@@ -49,7 +49,7 @@
       
           <form on:submit|preventDefault={handleLogin} class="space-y-6">
             <div>
-              <label for="email" class="block text-lg font-semibold tracking-wide mb-1">Email</label>
+              <label for="email" class="block text-lg tracking-[3px] mb-1">Email</label>
               <input 
                 id="email"
                 type="email" 
@@ -60,7 +60,7 @@
             </div>
       
             <div>
-              <label for="password" class="block text-lg font-semibold tracking-wide mb-1">Password</label>
+              <label for="password" class="block text-lg tracking-[3px] mb-1">Password</label>
               <input 
                 id="password"
                 type="password" 
@@ -76,7 +76,7 @@
       
             <button 
               type="submit" 
-              class="w-full bg-white text-blue-800 py-3 rounded-md font-bold hover:bg-gray-200 transition duration-200"
+              class="w-full bg-white text-[#2F3193] py-3 rounded-md font-bold hover:bg-gray-200 transition duration-200"
             >
               Login
             </button>
