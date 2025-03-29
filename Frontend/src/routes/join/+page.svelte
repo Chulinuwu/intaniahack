@@ -1,9 +1,10 @@
 <script>
     import CompetiterCard from "../../components/CompetiterCard/CompetiterCard.svelte";
+    import PlayCard from "../../components/PlayCard/PlayCard.svelte";
 </script>
 
 <div
-    class="flex flex-col items-center justify-center"
+    class="flex items-center justify-center"
     style="background-image: url('src/lib/assets/image/play-bg.png'); background-size: cover; background-position: center; height: 100vh;"
 >
 <CompetiterCard
@@ -29,5 +30,15 @@
         { type: "knowledge", description: "Exploring and discovering." },
         { type: "relationship", description: "Building a career and relationships." }
     ]}
+/>
+
+<PlayCard
+    type="money"
+    pic="src/lib/assets/image/play/money.png"
+    description="Money Card"
+    money={5}
+    happiness={2}
+    knowledge={4}
+    relationship={0}
 />
 </div>
