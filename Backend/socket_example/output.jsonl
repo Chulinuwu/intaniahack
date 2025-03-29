@@ -46,7 +46,7 @@
     "current_age": 0,
     "current_turn": 0,
     "event": "game_initialized",
-    "game_id": "2UZRDRTO23",
+    "game_id": "NW38QU3LQ6",
     "players": [
         {
             "current_age": 0,
@@ -103,21 +103,78 @@
     "player_index": 0,
     "player_name": "user"
 }
+{
+    "event": "turn_start",
+    "event_data": {
+        "ID": "age0_2",
+        "Type": "choice",
+        "Title": "Join After-School Activity",
+        "Description": "Your school offers after-school activities. Which one will you join?",
+        "AgeIndex": 0,
+        "Effects": null,
+        "Choices": [
+            {
+                "ID": "sports",
+                "Description": "Join a sports team",
+                "Effects": [
+                    {
+                        "Stat": "happiness",
+                        "Value": 5
+                    },
+                    {
+                        "Stat": "relationship",
+                        "Value": 5
+                    }
+                ]
+            },
+            {
+                "ID": "music",
+                "Description": "Join the music club",
+                "Effects": [
+                    {
+                        "Stat": "knowledge",
+                        "Value": 5
+                    },
+                    {
+                        "Stat": "happiness",
+                        "Value": 3
+                    }
+                ]
+            },
+            {
+                "ID": "science",
+                "Description": "Join the science club",
+                "Effects": [
+                    {
+                        "Stat": "knowledge",
+                        "Value": 8
+                    },
+                    {
+                        "Stat": "relationship",
+                        "Value": 2
+                    }
+                ]
+            }
+        ]
+    },
+    "player_index": 0,
+    "player_name": "user"
+}
 
 {
     "event": "turn_result",
     "life_event": {
-        "choice_made": "",
-        "description": "",
-        "title": "",
-        "type": ""
+        "choice_made": "Join a sports team",
+        "description": "Your school offers after-school activities. Which one will you join?",
+        "title": "Join After-School Activity",
+        "type": "choice"
     },
     "player_index": 0,
     "player_name": "user",
     "player_stats": {
-        "happiness": 52,
+        "happiness": 55,
         "knowledge": 50,
         "money": 50,
-        "relationship": 50
+        "relationship": 55
     }
 }

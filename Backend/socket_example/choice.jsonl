@@ -1,2 +1,2 @@
-{"event": "start_game","room_id": "13fc55"}
-{"event": "make_choice","room_id": "13fc55","PlayerIndex": "0","EventID": "age0_1"}
+{"event": "start_game","room_id": "fa9261"}
+{"event": "make_choice","room_id": "fa9261","player_index": 0, "event_id":"age0_2","choice_id": "sports"}
