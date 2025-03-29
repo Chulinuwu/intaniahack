@@ -184,28 +184,33 @@ func getPlayersList(room *models.Room) []string {
 
 // Broadcast รายชื่อผู้เล่นให้ทุกคนในห้อง
 func broadcastPlayerList(roomID string, playersList []string, sender *websocket.Conn) {
-	roomsMutex.Lock()
-	room, exists := rooms[roomID]
-	roomsMutex.Unlock()
-	if !exists {
-		return
-	}
+    roomsMutex.Lock()
+    room, exists := rooms[roomID]
+    roomsMutex.Unlock()
+    if !exists {
+        return
+    }
 
-	message := gin.H{"event": "player_list", "players": playersList}
+    // สร้างข้อมูลที่มี host ระบุชัดเจน
+    message := gin.H{
+        "event": "player_list",
+        "players": playersList,
+        "host": room.HostName, // เพิ่ม field host
+    }
 
-	room.Mutex.Lock()
-	defer room.Mutex.Unlock()
+    room.Mutex.Lock()
+    defer room.Mutex.Unlock()
 
-	// ส่งไปยัง host
-	if room.Host != sender {
-		room.Host.WriteJSON(message)
-	}
-	// ส่งไปยังผู้เล่นทุกคน
-	for _, peer := range room.Players {
-		if peer != sender {
-			peer.WriteJSON(message)
-		}
-	}
+    // ส่งไปยัง host
+    if room.Host != sender {
+        room.Host.WriteJSON(message)
+    }
+    // ส่งไปยังผู้เล่นทุกคน
+    for _, peer := range room.Players {
+        if peer != sender {
+            peer.WriteJSON(message)
+        }
+    }
 }
 
 // Broadcast ข้อความว่าเริ่มเกมได้
@@ -230,22 +235,33 @@ func broadcastStartGame(roomID string) {
 	}
 }
 
-// จัดการข้อความจาก WebSocket
 func handleMessages(conn *websocket.Conn, roomID string) {
-	defer func() {
-		conn.Close()
-		removeConnection(roomID, conn)
-	}()
+    defer func() {
+        conn.Close()
+        removeConnection(roomID, conn)
+    }()
 
-	for {
-		_, message, err := conn.ReadMessage()
-		if err != nil {
-			fmt.Println("WebSocket Read Error:", err)
-			break
-		}
+    for {
+        _, message, err := conn.ReadMessage()
+        if err != nil {
+            fmt.Println("WebSocket Read Error:", err)
+            break
+        }
 
-		broadcast(roomID, message, conn)
-	}
+        // Parse ข้อความเพื่อตรวจสอบ event
+        var msgData struct {
+            Event  string `json:"event"`
+            RoomID string `json:"room_id"`
+        }
+        if err := json.Unmarshal(message, &msgData); err == nil {
+            if msgData.Event == "start_game" {
+                broadcast(roomID, message, conn) // ส่งต่อ start_game ไปยังทุกคน
+                continue
+            }
+        }
+
+        broadcast(roomID, message, conn)
+    }
 }
 
 // กระจายข้อความไปยังผู้เล่นทุกคนในห้อง ยกเว้นคนส่ง
