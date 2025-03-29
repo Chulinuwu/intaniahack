@@ -39,7 +39,7 @@
 
     function handleLogout() {
         removeToken();
-        goto('/');
+        goto('/login');
     }
 
     function goToLogin() {
@@ -58,6 +58,9 @@
     <!-- Modal box -->
     <div class="relative w-full h-screen flex items-center justify-center">
         <div class=" px-10 py-8 rounded-md shadow-xl relative w-full max-w-md border">
+          
+         
+      
           {#if isAuthenticated}
             <h1 class="text-3xl font-bold text-white mb-4 text-center">
                 Welcome, {username}
