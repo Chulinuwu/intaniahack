@@ -32,31 +32,40 @@ func HostGame(c *gin.Context) {
         c.JSON(http.StatusBadRequest, gin.H{"error": "WebSocket Upgrade Error"})
         return
     }
+    c.Writer.WriteHeader(http.StatusSwitchingProtocols)
 
-    // อ่านข้อความแรกจาก WebSocket
-    _, msg, err := conn.ReadMessage()
-    if err != nil {
-        fmt.Println("WebSocket Read Error:", err)
-        conn.Close()
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to read token"})
-        return
-    }
-
-    // Parse JSON เพื่อรับ token และ topic
-    var tokenData struct {
-        Authorization string `json:"Authorization"`
-        Topic         string `json:"topic"`
-    }
-    if err := json.Unmarshal(msg, &tokenData); err != nil {
-        conn.Close()
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
-        return
-    }
-
-    tokenString := strings.TrimPrefix(tokenData.Authorization, "Bearer ")
+    tokenString := c.GetHeader("Authorization")
+    topic := c.Query("topic")
     if tokenString == "" {
+        // ถ้าไม่มีใน header ให้รอข้อความแรก
+        _, msg, err := conn.ReadMessage()
+        if err != nil {
+            fmt.Println("WebSocket Read Error:", err)
+            conn.Close()
+            return
+        }
+
+        var tokenData struct {
+            Authorization string `json:"Authorization"`
+            Topic         string `json:"topic"`
+        }
+        if err := json.Unmarshal(msg, &tokenData); err != nil {
+            conn.WriteJSON(gin.H{"error": "Invalid token format"})
+            conn.Close()
+            return
+        }
+
+        tokenString = strings.TrimPrefix(tokenData.Authorization, "Bearer ")
+        if tokenData.Topic != "" {
+            topic = tokenData.Topic
+        }
+    } else {
+        tokenString = strings.TrimPrefix(tokenString, "Bearer ")
+    }
+
+    if tokenString == "" {
+        conn.WriteJSON(gin.H{"error": "Token missing"})
         conn.Close()
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Token missing"})
         return
     }
 
@@ -65,13 +74,16 @@ func HostGame(c *gin.Context) {
         return JwtKey, nil
     })
     if err != nil || !token.Valid {
+        conn.WriteJSON(gin.H{"error": "Invalid token"})
         conn.Close()
-        c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
         return
     }
 
     username := claims.Username
     roomID := utils.GenerateRoomID()
+    if topic == "" {
+        topic = "General Knowledge" // Default topic
+    }
 
     roomsMutex.Lock()
     rooms[roomID] = &models.Room{
@@ -80,12 +92,12 @@ func HostGame(c *gin.Context) {
         Players:     []*websocket.Conn{},
         HostName:    username,
         PlayerNames: make(map[*websocket.Conn]string),
-        Topic:       tokenData.Topic, // เก็บ topic ที่ได้รับ
+        Topic:       topic,
     }
     roomsMutex.Unlock()
 
-    conn.WriteJSON(gin.H{"room_id": roomID, "host": username, "topic": tokenData.Topic})
-    fmt.Println("Room created:", roomID, "Topic:", tokenData.Topic)
+    conn.WriteJSON(gin.H{"room_id": roomID, "host": username, "topic": topic})
+    fmt.Println("Room created:", roomID, "Topic:", topic)
 
     go handleMessages(conn, roomID)
 }
