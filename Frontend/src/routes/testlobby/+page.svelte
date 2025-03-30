@@ -23,7 +23,7 @@
 
 	// Game state flag
 	let isGameStarted = false;
-
+	let turnCount = 0; // เพิ่มตัวนับรอบการเล่น
 	// Game over flag and results
 	let isGameOver = false;
 	let gameResults: any[] = [];
@@ -159,16 +159,10 @@
 		// Game initialization
 		if (data.event === 'game_initialized') {
 			isGameStarted = true;
-			isGameOver = false; // Reset game over state
-			currentAgeIndex = data.current_age;
-
-			// Update age ranges if provided
-			if (data.age_ranges && data.age_ranges.length > 0) {
-				ageRanges = data.age_ranges.map((range: any, i: number) => ({
-					label: range,
-					data: ageRanges[i]?.data || Array(5).fill(null) // Keep existing data structure with fallback
-				}));
-			}
+			isGameOver = false;
+			currentAgeIndex = 0; // เริ่มที่ 0 - 12
+			turnCount = 0; // รีเซ็ต turnCount
+	
 
 			// Initialize player stats
 			if (data.players) {
@@ -187,6 +181,17 @@
 		}
 		if (data.event === 'turn_result') {
 			handleTurnResult(data);
+
+			turnCount += 1;
+			console.log('Turn Count:', turnCount, 'Players:', players.length);
+			// ถ้าครบรอบ (ทุกคนเล่นครบ 1 รอบ)
+			if (turnCount >= players.length && currentAgeIndex < ageRanges.length - 1) {
+				currentAgeIndex += 1; // เลื่อนไปช่วงอายุถัดไป
+				turnCount = 0; // รีเซ็ตรอบ
+				ageRanges[currentAgeIndex].data = Array(5).fill(null); // รีเซ็ต dropped cards
+				currentAgeProgress = Math.floor((currentAgeIndex / (totalAges - 1)) * 100);
+				showNotification(`Age advanced to ${ageRanges[currentAgeIndex].label}`);
+			}
 		}
 
 		// Age progression
@@ -551,6 +556,7 @@
 		// Reset game state
 		handCards = [];
 		currentAgeIndex = 0;
+		turnCount = 0;
 		resetAllDroppedCards();
 	}
 
@@ -572,6 +578,16 @@
 		droppedCards40_59 = Array(5).fill(null);
 		droppedCards60_79 = Array(5).fill(null);
 		droppedCards80_100 = Array(5).fill(null);
+
+		ageRanges = [
+			{ label: '0 - 12', data: droppedCards0_12 },
+			{ label: '13 - 18', data: droppedCards13_18 },
+			{ label: '19 - 22', data: droppedCards19_22 },
+			{ label: '23 - 39', data: droppedCards23_39 },
+			{ label: '40 - 59', data: droppedCards40_59 },
+			{ label: '60 - 79', data: droppedCards60_79 },
+			{ label: '80 - 100', data: droppedCards80_100 }
+		];
 	}
 
 	function playAgain() {
@@ -792,7 +808,7 @@
 			<div class="flex flex-col text-center text-white">
 				<div class="text-sm">{topic || 'GET THE MOST MONEY'}</div>
 				<TimeLeft />
-				AGE {currentAgeIndex}: {ageRanges[currentAgeIndex]?.label || 'Unknown Age Range'}
+				<div class="text-xs">AGE {currentAge.label}</div>
 
 				<!-- Current event display -->
 				{#if currentEvent}
