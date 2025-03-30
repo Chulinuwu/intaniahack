@@ -333,11 +333,11 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 					// เรียกใช้ HandlePlayerChoice ด้วย eventIDs
 					HandlePlayerChoice(room, msgData.PlayerIndex, msgData.ChoiceID, msgData.EventID, eventIDs)
 
+					nextPlayerIndex := (msgData.PlayerIndex + 1) % (len(room.Players) + 1) // +1 for host
 					// Check if this completes a round of turns
-					checkAgeProgression(room, msgData.PlayerIndex)
+					checkAgeProgression(room, nextPlayerIndex)
 
 					// Schedule the next turn
-					nextPlayerIndex := (msgData.PlayerIndex + 1) % (len(room.Players) + 1) // +1 for host
 					fmt.Println("msgData.PlayerIndex:", msgData.PlayerIndex)
 					scheduleNextTurn(room, nextPlayerIndex)
 				}()

@@ -245,7 +245,7 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 		// ดำเนินการกับทุก event_id ใน array
 		for i, evID := range eventIDs {
 			event, choice := handleSingleEvent(gameState, playerIndex, choiceID, evID)
-			
+
 			// บันทึก event และ choice สุดท้ายเพื่อใช้ใน broadcastTurnResult
 			if i == len(eventIDs)-1 {
 				lastEvent = event
@@ -254,7 +254,7 @@ func HandlePlayerChoice(room *models.Room, playerIndex int, choiceID string, eve
 				}
 			}
 		}
-		
+
 		// ส่ง turn result ของ event สุดท้ายเท่านั้น
 		broadcastTurnResult(room, gameState, playerIndex, lastEvent, lastChoiceID)
 	} else {
@@ -344,7 +344,7 @@ func handleSingleEvent(gameState *models.GameState, playerIndex int, choiceID st
 		// If this is a choice event, find the selected choice
 		if currentEvent.Type == "choice" {
 			var choiceFound bool = false
-			
+
 			// หากมี choiceID ให้ใช้ตาม
 			if choiceID != "" {
 				for _, choice := range currentEvent.Choices {
@@ -359,7 +359,7 @@ func handleSingleEvent(gameState *models.GameState, playerIndex int, choiceID st
 					}
 				}
 			}
-			
+
 			// ถ้าไม่พบ choice หรือไม่ได้ระบุ choiceID ให้ใช้ตัวเลือกแรก
 			if !choiceFound && len(currentEvent.Choices) > 0 {
 				choice := currentEvent.Choices[0]
@@ -384,21 +384,17 @@ func handleSingleEvent(gameState *models.GameState, playerIndex int, choiceID st
 			currentEvent,
 		)
 	}
-	
+
 	return currentEvent, actualChoiceID
 }
 
 func scheduleNextTurn(room *models.Room, nextPlayerIndex int) {
 	// fmt.Println("Scheduling next turn for player index:", nextPlayerIndex)
 	gameState := room.GameState
-	if nextPlayerIndex == 0 {
-		gameState.CurrentAge++
-	}
+
 	// fmt.Println("nextPlayerIndex:", nextPlayerIndex)
 	// fmt.Println("gameState.CurrentAge:", gameState.CurrentAge)
-	if gameState.CurrentAge == 7 && nextPlayerIndex == 0 {
-		// fmt.Println("lingan guliguli")
-		finalizeGame(room)
+	if gameState.CurrentAge == 6 && nextPlayerIndex == 0 {
 		return
 	}
 	startPlayerTurn(room, nextPlayerIndex)
@@ -475,7 +471,7 @@ func broadcastTurnResult(room *models.Room, gameState *models.GameState, playerI
 }
 
 // checkAgeProgression checks if all players have completed their turns and advances age if needed
-func checkAgeProgression(room *models.Room, playerIndex int) {
+func checkAgeProgression(room *models.Room, nextPlayerIndex int) {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
@@ -487,24 +483,13 @@ func checkAgeProgression(room *models.Room, playerIndex int) {
 	gameState.Mutex.Lock()
 	defer gameState.Mutex.Unlock()
 
-	// totalPlayers := len(room.Players) + 1
-
-	// If the current turn is back to player 0, we've completed a round
-	if gameState.CurrentAge == 0 && gameState.CurrentTurn == 1 {
-		// Reset all players' turns
-
-	}
-	// if gameState.CurrentTurn == 0 && playerIndex == 0 {
-	// 	gameState.CurrentAge++
-
-	// }
-
-	if gameState.CurrentTurn == 0 && gameState.CurrentAge != 0 {
+	if nextPlayerIndex == 0 {
 		// Move to the next age
 		// fmt.Println("Blah Balh Balh")
 		// fmt.Println("Current Age:", gameState.CurrentAge)
 		// fmt.Println("Current Turn:", gameState.CurrentTurn)
 		if gameState.CurrentAge < 6 { // 0-6 are our 7 age ranges
+			gameState.CurrentAge++
 			// fmt.Println("Bleh Belh Belh")
 			// Broadcast age advancement
 			message := gin.H{
@@ -519,18 +504,15 @@ func checkAgeProgression(room *models.Room, playerIndex int) {
 			// Update game state in Redis
 			// jsonData, _ := json.Marshal(gameState)
 			// config.RedisClient.Set(ctx, fmt.Sprintf("game:%s", gameState.GameID), jsonData, 24*time.Hour)
+		} else {
+			finalizeGame(room)
 		}
-		// else {
-		// 	// Game is complete if we've gone through all ages
-		// 	finalizeGame(room)
-		// }
 	}
 }
 
 // finalizeGame calculates final scores and ends the game
 func finalizeGame(room *models.Room) {
 	// TODO : room mutex is not working because it already lock in checkAgeProgression
-
 	gameState := room.GameState
 	if gameState == nil {
 		return
