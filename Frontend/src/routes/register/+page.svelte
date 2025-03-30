@@ -8,7 +8,7 @@
     let error = '';
     async function handleLogin() {
         try {
-            const response = await fetch(`http://${import.meta.env.VITE_API_URL}/login`, {
+            const response = await fetch(`https://${import.meta.env.VITE_API_URL}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -30,7 +30,7 @@
     }
     async function handleRegister() {
     try {
-        const response = await fetch(`http://${import.meta.env.VITE_API_URL}/register`, {
+        const response = await fetch(`https://${import.meta.env.VITE_API_URL}/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
