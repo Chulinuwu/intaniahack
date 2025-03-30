@@ -460,7 +460,6 @@ func broadcastTurnResult(room *models.Room, gameState *models.GameState, playerI
 			"relationship": player.Relationship,
 		},
 		"life_event": gin.H{
-			"title":       event.Title,
 			"description": event.Description,
 			"type":        event.Type,
 			"choice_made": choiceDescription,
@@ -606,4 +605,73 @@ func broadcastToRoom(room *models.Room, message gin.H) {
 	for _, conn := range room.Players {
 		conn.WriteMessage(websocket.TextMessage, jsonMessage)
 	}
+}
+
+// HandleCardRequest processes a request for game cards
+func HandleCardRequest(room *models.Room, playerIndex int, ageIndex int, count int) {
+	room.Mutex.Lock()
+	defer room.Mutex.Unlock()
+
+	gameState := room.GameState
+	if gameState == nil {
+		return
+	}
+
+	// Generate random events for the requested age
+	cards := make([]models.Event, count)
+	for i := 0; i < count; i++ {
+		cards[i] = models.GetRandomEvent(ageIndex)
+	}
+
+	// Get the target WebSocket connection
+	var conn *websocket.Conn
+	if playerIndex == 0 {
+		conn = room.Host
+	} else {
+		conn = room.Players[playerIndex-1]
+	}
+
+	// Send cards to the requesting player
+	message := gin.H{
+		"event": "card_deck",
+		"cards": formatCardsForClient(cards),
+	}
+
+	conn.WriteJSON(message)
+}
+
+// formatCardsForClient converts backend event format to frontend card format
+func formatCardsForClient(events []models.Event) []gin.H {
+	cards := make([]gin.H, len(events))
+	for i, event := range events {
+		// Map effects to individual values
+		money := 0
+		happiness := 0
+		knowledge := 0
+		relationship := 0
+
+		for _, effect := range event.Effects {
+			switch effect.Stat {
+			case "money":
+				money += effect.Value
+			case "happiness":
+				happiness += effect.Value
+			case "knowledge":
+				knowledge += effect.Value
+			case "relationship":
+				relationship += effect.Value
+			}
+		}
+
+		cards[i] = gin.H{
+			"id":           event.ID,
+			"type":         event.Type,
+			"description":  event.Description,
+			"money":        money,
+			"happiness":    happiness,
+			"knowledge":    knowledge,
+			"relationship": relationship,
+		}
+	}
+	return cards
 }

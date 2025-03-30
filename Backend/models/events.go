@@ -1093,7 +1093,6 @@ func GetRandomEvent(ageIndex int) Event {
 	return Event{
 		ID:          "default",
 		Type:        "happiness",
-		Title:       "An Unexpected Day",
 		Description: "Something unusual happened today",
 		AgeIndex:    ageIndex,
 		Effects: []Effect{
