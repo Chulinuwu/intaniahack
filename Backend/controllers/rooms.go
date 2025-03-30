@@ -343,6 +343,12 @@ func handleMessages(conn *websocket.Conn, roomID string) {
 				}()
 				fmt.Println("After HandlePlayerChoice")
 				continue
+
+			case "request_cards":
+				ageIndex := int(msgData.Data["age_index"].(float64))
+				count := int(msgData.Data["count"].(float64))
+				HandleCardRequest(room, msgData.PlayerIndex, ageIndex, count)
+				continue
 			}
 		} else {
 			fmt.Println("Error parsing message:", err)
