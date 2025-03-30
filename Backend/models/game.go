@@ -44,7 +44,6 @@ type AgeRange struct {
 type Event struct {
 	ID          string
 	Type        string // "positive", "negative", "neutral", "choice"
-	Title       string
 	Description string
 	AgeIndex    int
 	Effects     []Effect
