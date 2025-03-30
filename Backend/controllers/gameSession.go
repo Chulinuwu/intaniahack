@@ -390,13 +390,8 @@ func handleSingleEvent(gameState *models.GameState, playerIndex int, choiceID st
 
 func scheduleNextTurn(room *models.Room, nextPlayerIndex int) {
 	// fmt.Println("Scheduling next turn for player index:", nextPlayerIndex)
-	gameState := room.GameState
-
 	// fmt.Println("nextPlayerIndex:", nextPlayerIndex)
 	// fmt.Println("gameState.CurrentAge:", gameState.CurrentAge)
-	if gameState.CurrentAge == 6 && nextPlayerIndex == 0 {
-		return
-	}
 	startPlayerTurn(room, nextPlayerIndex)
 }
 
@@ -482,30 +477,25 @@ func checkAgeProgression(room *models.Room, nextPlayerIndex int) {
 	gameState.Mutex.Lock()
 	defer gameState.Mutex.Unlock()
 
-	if nextPlayerIndex == 0 {
-		// Move to the next age
-		// fmt.Println("Blah Balh Balh")
-		// fmt.Println("Current Age:", gameState.CurrentAge)
-		// fmt.Println("Current Turn:", gameState.CurrentTurn)
-		if gameState.CurrentAge < 6 { // 0-6 are our 7 age ranges
-			gameState.CurrentAge++
-			// fmt.Println("Bleh Belh Belh")
-			// Broadcast age advancement
-			message := gin.H{
-				"event":     "age_advanced",
-				"age_index": gameState.CurrentAge,
-				"age_range": models.GetAgeRanges()[gameState.CurrentAge],
-				"players":   gameStateToPlayerInfo(gameState),
-			}
+	if gameState.CurrentAge == 6 && nextPlayerIndex == 0 {
+		// Finalize the game
+		finalizeGame(room)
+		return
+	}
 
-			broadcastToRoom(room, message)
+	// For ages 0-5, advance to the next age when we return to player 0
+	if nextPlayerIndex == 0 && gameState.CurrentAge < 6 {
+		gameState.CurrentAge++
 
-			// Update game state in Redis
-			// jsonData, _ := json.Marshal(gameState)
-			// config.RedisClient.Set(ctx, fmt.Sprintf("game:%s", gameState.GameID), jsonData, 24*time.Hour)
-		} else {
-			finalizeGame(room)
+		// Broadcast age advancement
+		message := gin.H{
+			"event":     "age_advanced",
+			"age_index": gameState.CurrentAge,
+			"age_range": models.GetAgeRanges()[gameState.CurrentAge],
+			"players":   gameStateToPlayerInfo(gameState),
 		}
+
+		broadcastToRoom(room, message)
 	}
 }
 
