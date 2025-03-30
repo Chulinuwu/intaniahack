@@ -7,7 +7,7 @@
 	import { getToken, connectWebSocket } from '$lib/auth';
 	import { goto } from '$app/navigation';
 	import bg from '$lib/assets/image/bg.gif';
-
+	
 	// Lobby variables
 	let token = '';
 	let ws: WebSocket | null = null;
@@ -26,16 +26,16 @@
 
 	// Game over flag and results
 	let isGameOver = false;
-	let gameResults = [];
+	let gameResults: any[] = [];
 
 	// Game variables
-	let handCards = [];
+	let handCards: any[] = [];
 	let currentAgeIndex = 0;
-	let turnCount = 0; // เพิ่มตัวนับรอบการเล่น
+	
 	$: currentAge = ageRanges[currentAgeIndex];
 
 	// Current event information
-	let currentEvent = null;
+	let currentEvent: { Type: string; Choices: any[]; ID: any; Description: any; } | null = null;
 
 	// Topics for host to choose
 	const topics = [
@@ -65,19 +65,19 @@
 	];
 
 	// Card selection variables
-	let selectedCard = null;
-	let selectedCardIndex = null;
-	let selectedCardSource = null;
-	let selectedAgeIndex = null;
+	let selectedCard: null = null;
+	let selectedCardIndex: number | null = null;
+	let selectedCardSource: string | null = null;
+	let selectedAgeIndex: number | null = null;
 
 	// Variables to track turn state
 	let isMyTurn = false;
 	let currentEventChoices = [];
-	let allPlayerStats = [];
+	let allPlayerStats: any[] = [];
 
 	// Game notification system
 	let notification = '';
-	let notificationTimer = null;
+	let notificationTimer: string | number | NodeJS.Timeout | null | undefined = null;
 
 	// Game progress
 	let currentAgeProgress = 0;
@@ -107,6 +107,7 @@
 		if (ws) ws.close();
 		ws = connectWebSocket(token, '/host', '', handleMessage);
 
+		// Send topic with the connection if needed
 		if (ws && ws.readyState === WebSocket.OPEN) {
 			ws.send(
 				JSON.stringify({
@@ -134,7 +135,7 @@
 		isGameStarted = true;
 	}
 
-	function handleMessage(data) {
+	function handleMessage(data: any) {
 		console.log('Received:', data);
 		if (data.error) {
 			error = data.error;
@@ -158,15 +159,23 @@
 		// Game initialization
 		if (data.event === 'game_initialized') {
 			isGameStarted = true;
-			isGameOver = false;
-			currentAgeIndex = 0; // เริ่มที่ 0 - 12
-			turnCount = 0; // รีเซ็ต turnCount
-			showNotification('Game started! Waiting for first player...');
+			isGameOver = false; // Reset game over state
+			currentAgeIndex = data.current_age;
+
+			// Update age ranges if provided
+			if (data.age_ranges && data.age_ranges.length > 0) {
+				ageRanges = data.age_ranges.map((range: any, i: number) => ({
+					label: range,
+					data: ageRanges[i]?.data || Array(5).fill(null) // Keep existing data structure with fallback
+				}));
+			}
 
 			// Initialize player stats
 			if (data.players) {
 				updatePlayerStats(data.players);
 			}
+
+			showNotification('Game started! Waiting for first player...');
 		}
 
 		// Turn management
@@ -178,17 +187,24 @@
 		}
 		if (data.event === 'turn_result') {
 			handleTurnResult(data);
-			// นับรอบเมื่อมีผลลัพธ์จากเทิร์น
-			turnCount += 1;
-			console.log('Turn Count:', turnCount, 'Players:', players.length);
-			// ถ้าครบรอบ (ทุกคนเล่นครบ 1 รอบ)
-			if (turnCount >= players.length && currentAgeIndex < ageRanges.length - 1) {
-				currentAgeIndex += 1; // เลื่อนไปช่วงอายุถัดไป
-				turnCount = 0; // รีเซ็ตรอบ
-				ageRanges[currentAgeIndex].data = Array(5).fill(null); // รีเซ็ต dropped cards
-				currentAgeProgress = Math.floor((currentAgeIndex / (totalAges - 1)) * 100);
-				showNotification(`Age advanced to ${ageRanges[currentAgeIndex].label}`);
+		}
+
+		// Age progression
+		if (data.event === 'age_advanced') {
+			currentAgeIndex = data.age_index;
+			currentAgeProgress = Math.floor((currentAgeIndex / (totalAges - 1)) * 100);
+
+			if (data.players) {
+				updatePlayerStats(data.players);
 			}
+
+			// Reset dropped cards for new age
+			ageRanges = ageRanges.map((age, i) => ({
+				...age,
+				data: i === currentAgeIndex ? Array(5).fill(null) : age.data
+			}));
+
+			showNotification(`Age advanced to ${data.age_range.Label}`);
 		}
 
 		// Game results
@@ -198,15 +214,15 @@
 
 		// Card deck response
 		if (data.event === 'card_deck') {
-			handCards = data.cards.map((card) => ({
+			handCards = data.cards.map((card: { id: any; }) => ({
 				...card,
-				pic: `../src/lib/imggen/${card.id}.png`
+				pic: `../src/lib/imggen/${card.id}.png` // Store the filename as string
 			}));
 			console.log('Updated handCards:', handCards);
 		}
 	}
 
-	function showNotification(message) {
+	function showNotification(message: string) {
 		notification = message;
 		if (notificationTimer) clearTimeout(notificationTimer);
 		notificationTimer = setTimeout(() => {
@@ -214,32 +230,39 @@
 		}, 5000);
 	}
 
-	function showEventResult(event, playerName) {
+	function showEventResult(event: { description: any; choice_made: any; }, playerName: any) {
+		// Show a modal or notification with the event result
 		if (!event || !event.description) return;
+
 		let message = `${playerName}: ${event.description}`;
 		if (event.choice_made) {
 			message += ` (Chose: ${event.choice_made})`;
 		}
+
 		showNotification(message);
 	}
 
-	function showGameResults(results) {
+	function showGameResults(results: any[]) {
+		// Show game results modal
 		isGameOver = true;
 		gameResults = results;
 		showNotification('Game Over! The results are in!');
 	}
 
 	// Game functions
-	function changeAge(direction) {
+	function changeAge(direction: number) {
 		if (!isMyTurn) return;
 		currentAgeIndex = Math.max(0, Math.min(ageRanges.length - 1, currentAgeIndex + direction));
 	}
 
 	function getDeck() {
 		console.log('Requesting cards...');
+
+		// Request cards from server only if it's the player's turn
 		if (isMyTurn && ws) {
 			const playerIndex = players.indexOf(currentUsername);
 			if (playerIndex === -1) return;
+
 			ws.send(
 				JSON.stringify({
 					event: 'request_cards',
@@ -247,7 +270,7 @@
 					player_index: playerIndex,
 					data: {
 						age_index: currentAgeIndex,
-						count: 6
+						count: 6 // Request 6 cards
 					}
 				})
 			);
@@ -257,11 +280,13 @@
 	}
 
 	// Card selection functions
-	function selectCard(card, index, source, ageIndex = null) {
+	function selectCard(card: any, index: number, source: string, ageIndex: number | null = null) {
+		// Allow card selection only during player's turn
 		if (!isMyTurn) {
 			showNotification("It's not your turn. You can't select cards now.");
 			return;
 		}
+
 		if (
 			selectedCardIndex === index &&
 			selectedCardSource === source &&
@@ -279,12 +304,14 @@
 		}
 	}
 
-	function moveCardToSlot(slotIndex) {
+	function moveCardToSlot(slotIndex: number) {
 		if (!isMyTurn) {
 			showNotification("It's not your turn. You can't move cards now.");
 			return;
 		}
+
 		if (!selectedCard || selectedCardSource === null) return;
+
 		if (selectedCardSource === 'hand' && selectedCardIndex !== null) {
 			if (!currentAge.data[slotIndex]) {
 				handCards = handCards.filter((_, i) => i !== selectedCardIndex);
@@ -300,6 +327,7 @@
 				currentAge.data[slotIndex] = selectedCard;
 			}
 		}
+
 		resetSelection();
 	}
 
@@ -308,7 +336,9 @@
 			showNotification("It's not your turn. You can't trash cards now.");
 			return;
 		}
+
 		if (!selectedCard || selectedCardSource === null) return;
+
 		if (selectedCardSource === 'hand' && selectedCardIndex !== null) {
 			handCards = handCards.filter((_, i) => i !== selectedCardIndex);
 		} else if (
@@ -318,6 +348,7 @@
 		) {
 			ageRanges[selectedAgeIndex].data[selectedCardIndex] = null;
 		}
+
 		resetSelection();
 	}
 
@@ -326,6 +357,7 @@
 		selectedCardIndex = null;
 		selectedCardSource = null;
 		selectedAgeIndex = null;
+
 		handCards = handCards;
 		ageRanges = ageRanges.map((age) => ({
 			...age,
@@ -335,8 +367,12 @@
 
 	function handleSubmit() {
 		if (!ws || !isMyTurn) return;
+
+		// For choice events, handle differently than card placement
 		if (currentEvent && currentEvent.Type === 'choice' && selectedCardIndex !== null) {
+			// For choice events, send the selected choice ID
 			const choiceId = currentEvent.Choices?.[selectedCardIndex]?.ID || 'default_choice';
+
 			ws.send(
 				JSON.stringify({
 					event: 'make_choice',
@@ -346,11 +382,16 @@
 					choice_id: choiceId
 				})
 			);
+
 			resetSelection();
 			return;
 		}
+
+		// For card placement, collect all placed cards
 		const eventIDs = currentAge.data.filter((card) => card !== null).map((card) => card.id);
+
 		if (eventIDs.length === 0) {
+			// If we have a current event but no cards placed, send the event ID directly
 			if (currentEvent) {
 				ws.send(
 					JSON.stringify({
@@ -363,9 +404,13 @@
 				);
 				return;
 			}
+
+			// Show error if no cards and no current event
 			showNotification('You need to place at least one card before confirming your choice.');
 			return;
 		}
+
+		// Send choices to backend with multiple event IDs
 		ws.send(
 			JSON.stringify({
 				event: 'make_choice',
@@ -377,16 +422,22 @@
 				}
 			})
 		);
+
+		// Clear placed cards after submission
 		ageRanges[currentAgeIndex].data = Array(5).fill(null);
 	}
 
-	function handleTurnStart(data) {
+	function handleTurnStart(data: { player_name: string; event_data: any; }) {
 		isMyTurn = data.player_name === currentUsername;
 		currentEvent = data.event_data;
+
+		// If it's a choice event, prepare choices for display
 		if (currentEvent && currentEvent.Type === 'choice' && currentEvent.Choices) {
 			currentEventChoices = currentEvent.Choices;
+
+			// If it's a choice event, add choices to hand cards
 			if (isMyTurn) {
-				handCards = currentEvent.Choices.map((choice, index) => ({
+				handCards = currentEvent.Choices.map((choice: { ID: any; Description: any; Effects: any; }, index: any) => ({
 					id: choice.ID,
 					type: 'choice',
 					description: choice.Description,
@@ -394,46 +445,59 @@
 					happiness: getEffectValue(choice.Effects, 'happiness'),
 					knowledge: getEffectValue(choice.Effects, 'knowledge'),
 					relationship: getEffectValue(choice.Effects, 'relationship'),
-					pic: `../src/lib/imggen/choice_${index}.png`
+					pic: `../src/lib/imggen/choice_${index}.png` // Placeholder image
 				}));
 			}
 		} else {
 			currentEventChoices = [];
+
+			// For regular events, show the event in the slot
 			if (isMyTurn) {
+				// Clear previous cards
 				handCards = [];
+				// Request cards for placement
 				getDeck();
 			}
 		}
+
 		if (isMyTurn) {
+			// Show turn notification
 			showNotification(`It's your turn! ${currentEvent?.Description || ''}`);
 		}
 	}
 
-	function getEffectValue(effects, stat) {
+	function getEffectValue(effects: any[], stat: string) {
 		if (!effects) return 0;
-		const effect = effects.find((e) => e.Stat === stat);
+		const effect = effects.find((e: { Stat: any; }) => e.Stat === stat);
 		return effect ? effect.Value : 0;
 	}
 
-	function handleWaitingForTurn(data) {
+	function handleWaitingForTurn(data: { player_name: any; }) {
 		isMyTurn = false;
 		showNotification(`Waiting for ${data.player_name}'s turn...`);
 	}
 
-	function handleTurnResult(data) {
+	function handleTurnResult(data: { player_name: string; player_stats: any; life_event: any; }) {
+		// Update displayed stats for the player
 		const playerIndex = players.indexOf(data.player_name);
 		if (playerIndex >= 0 && data.player_stats) {
 			updatePlayerStat(playerIndex, data.player_stats);
 		}
+
+		// Show event result
 		showEventResult(data.life_event, data.player_name);
+
+		// Reset current event
 		if (data.player_name === currentUsername) {
 			currentEvent = null;
 			currentEventChoices = [];
+			// Clear placed cards
 			ageRanges[currentAgeIndex].data = Array(5).fill(null);
 		}
 	}
 
-	function updatePlayerStats(playersData) {
+	function updatePlayerStats(playersData: any[]) {
+		// Initialize the stats array if it doesn't exist
 		if (!allPlayerStats || allPlayerStats.length === 0) {
 			allPlayerStats = Array(players.length)
 				.fill(null)
@@ -444,7 +508,9 @@
 					relationship: 50
 				}));
 		}
-		playersData.forEach((playerData, index) => {
+
+		// Update player statistics from server data
+		playersData.forEach((playerData: { money: any; happiness: any; knowledge: any; relationship: any; }, index: number) => {
 			if (index < allPlayerStats.length) {
 				allPlayerStats[index] = {
 					money: playerData.money,
@@ -456,7 +522,7 @@
 		});
 	}
 
-	function updatePlayerStat(playerIndex, stats) {
+	function updatePlayerStat(playerIndex: number, stats: { money: any; happiness: any; knowledge: any; relationship: any; }) {
 		if (!allPlayerStats) {
 			allPlayerStats = Array(players.length)
 				.fill(null)
@@ -467,6 +533,7 @@
 					relationship: 50
 				}));
 		}
+
 		if (playerIndex >= 0 && playerIndex < allPlayerStats.length) {
 			allPlayerStats[playerIndex] = {
 				money: stats.money,
@@ -480,11 +547,22 @@
 	function returnToLobby() {
 		isGameStarted = false;
 		isGameOver = false;
+
+		// Reset game state
 		handCards = [];
 		currentAgeIndex = 0;
-		turnCount = 0; // รีเซ็ต turnCount
 		resetAllDroppedCards();
 	}
+
+	ageRanges = [
+		{ label: '0 - 12', data: droppedCards0_12 },
+		{ label: '13 - 18', data: droppedCards13_18 },
+		{ label: '19 - 22', data: droppedCards19_22 },
+		{ label: '23 - 39', data: droppedCards23_39 },
+		{ label: '40 - 59', data: droppedCards40_59 },
+		{ label: '60 - 79', data: droppedCards60_79 },
+		{ label: '80 - 100', data: droppedCards80_100 }
+	];
 
 	function resetAllDroppedCards() {
 		droppedCards0_12 = Array(5).fill(null);
@@ -494,23 +572,15 @@
 		droppedCards40_59 = Array(5).fill(null);
 		droppedCards60_79 = Array(5).fill(null);
 		droppedCards80_100 = Array(5).fill(null);
-
-		ageRanges = [
-			{ label: '0 - 12', data: droppedCards0_12 },
-			{ label: '13 - 18', data: droppedCards13_18 },
-			{ label: '19 - 22', data: droppedCards19_22 },
-			{ label: '23 - 39', data: droppedCards23_39 },
-			{ label: '40 - 59', data: droppedCards40_59 },
-			{ label: '60 - 79', data: droppedCards60_79 },
-			{ label: '80 - 100', data: droppedCards80_100 }
-		];
 	}
 
 	function playAgain() {
 		isGameOver = false;
 		if (currentUsername === host) {
+			// Host can start a new game
 			startGame();
 		} else {
+			// Non-hosts just wait for host to start
 			showNotification('Waiting for the host to start a new game.');
 		}
 	}
@@ -520,6 +590,7 @@
 		if (notificationTimer) clearTimeout(notificationTimer);
 	});
 </script>
+
 {#if !isGameStarted}
 	<!-- Lobby Interface -->
 	<div
@@ -687,30 +758,19 @@
 		<div class="flex w-full justify-between">
 			<!-- Display player cards based on actual players -->
 			{#if players.length > 0 && allPlayerStats && allPlayerStats.length > 0}
-				{#if players.filter(p => p !== currentUsername).length > 0}
-					{@const otherPlayer1 = players.filter(p => p !== currentUsername)[0]}
-					{@const playerIndex1 = players.indexOf(otherPlayer1)}
-					<CompetiterCard
-						profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${otherPlayer1}`}
-						playerName={otherPlayer1}
-						money={allPlayerStats[playerIndex1]?.money || 50}
-						happiness={allPlayerStats[playerIndex1]?.happiness || 50}
-						knowledge={allPlayerStats[playerIndex1]?.knowledge || 50}
-						relationship={allPlayerStats[playerIndex1]?.relationship || 50}
-						isCurrentPlayer={otherPlayer1 === currentUsername}
-						isCurrentTurn={isMyTurn && otherPlayer1 === currentUsername}
-					/>
-				{:else}
-					<CompetiterCard
-						profileImage="../src/lib/assets/image/profile.jpg"
-						playerName="Player 1"
-						money={50}
-						happiness={50}
-						knowledge={50}
-						relationship={50}
-					/>
-				{/if}
+				<!-- First player card (can be host or first player) -->
+				<CompetiterCard
+					profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${players[0]}`}
+					playerName={players[0]}
+					money={allPlayerStats[0]?.money || 50}
+					happiness={allPlayerStats[0]?.happiness || 50}
+					knowledge={allPlayerStats[0]?.knowledge || 50}
+					relationship={allPlayerStats[0]?.relationship || 50}
+					isCurrentPlayer={players[0] === currentUsername}
+					isCurrentTurn={isMyTurn && players[0] === currentUsername}
+				/>
 			{:else}
+				<!-- Placeholder if no player data yet -->
 				<CompetiterCard
 					profileImage="../src/lib/assets/image/profile.jpg"
 					playerName="Player 1"
@@ -732,14 +792,16 @@
 			<div class="flex flex-col text-center text-white">
 				<div class="text-sm">{topic || 'GET THE MOST MONEY'}</div>
 				<TimeLeft />
-				<div class="text-xs">AGE {currentAge.label}</div>
+				AGE {currentAgeIndex}: {ageRanges[currentAgeIndex]?.label || 'Unknown Age Range'}
 
+				<!-- Current event display -->
 				{#if currentEvent}
 					<div class="mb-2 mt-1 text-sm">
 						{currentEvent.Description}
 					</div>
 				{/if}
 
+				<!-- Turn indicator -->
 				<div class="mb-2 text-sm font-bold">
 					{#if isMyTurn}
 						<span class="text-green-400">It's your turn!</span>
@@ -748,6 +810,7 @@
 					{/if}
 				</div>
 
+				<!-- Drop Zones for current age -->
 				<div class="mt-2 flex gap-3">
 					{#each currentAge.data as card, i}
 						<div
@@ -761,11 +824,29 @@
 									moveCardToSlot(i);
 								}
 							}}
+							on:keydown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									if (card) {
+										selectCard(card, i, 'dropzone', currentAgeIndex);
+									} else if (selectedCard) {
+										moveCardToSlot(i);
+									}
+								}
+							}}
+							role="button"
+							tabindex="0"
 							class:bg-[#474848]={selectedCard && !card && isMyTurn}
 						>
 							{#if card}
 								<div
 									on:click|stopPropagation={() => selectCard(card, i, 'dropzone', currentAgeIndex)}
+									on:keydown|stopPropagation={(e) => {
+										if (e.key === 'Enter' || e.key === ' ') {
+											selectCard(card, i, 'dropzone', currentAgeIndex);
+										}
+									}}
+									role="button"
+									tabindex="0"
 									class:scale-110={selectedCardIndex === i &&
 										selectedCardSource === 'dropzone' &&
 										selectedAgeIndex === currentAgeIndex}
@@ -788,30 +869,19 @@
 			</button>
 
 			{#if players.length > 1 && allPlayerStats && allPlayerStats.length > 1}
-				{#if players.filter(p => p !== currentUsername).length > 1}
-					{@const otherPlayer2 = players.filter(p => p !== currentUsername)[1]}
-					{@const playerIndex2 = players.indexOf(otherPlayer2)}
-					<CompetiterCard
-						profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${otherPlayer2}`}
-						playerName={otherPlayer2}
-						money={allPlayerStats[playerIndex2]?.money || 50}
-						happiness={allPlayerStats[playerIndex2]?.happiness || 50}
-						knowledge={allPlayerStats[playerIndex2]?.knowledge || 50}
-						relationship={allPlayerStats[playerIndex2]?.relationship || 50}
-						isCurrentPlayer={otherPlayer2 === currentUsername}
-						isCurrentTurn={isMyTurn && otherPlayer2 === currentUsername}
-					/>
-				{:else}
-					<CompetiterCard
-						profileImage="../src/lib/assets/image/profile.jpg"
-						playerName="Player 2"
-						money={50}
-						happiness={50}
-						knowledge={50}
-						relationship={50}
-					/>
-				{/if}
+				<!-- Second player card (if exists) -->
+				<CompetiterCard
+					profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${players[1]}`}
+					playerName={players[1]}
+					money={allPlayerStats[1]?.money || 50}
+					happiness={allPlayerStats[1]?.happiness || 50}
+					knowledge={allPlayerStats[1]?.knowledge || 50}
+					relationship={allPlayerStats[1]?.relationship || 50}
+					isCurrentPlayer={players[1] === currentUsername}
+					isCurrentTurn={isMyTurn && players[1] === currentUsername}
+				/>
 			{:else}
+				<!-- Placeholder if no second player yet -->
 				<CompetiterCard
 					profileImage="../src/lib/assets/image/profile.jpg"
 					playerName="Player 2"
@@ -830,7 +900,7 @@
 			>
 				<img
 					src="../src/lib/assets/image/play/random-deck-button.svg"
-					alt="deck"
+					alt="desk"
 					class="h-[165px] w-[169px]"
 				/>
 			</button>
@@ -943,6 +1013,7 @@
 						: ''}"
 					on:click={(e) => {
 						if (!isMyTurn) return;
+
 						const target = e.target as HTMLElement;
 						if (selectedCard && !target.closest('.play-card-container')) {
 							if (
