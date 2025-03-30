@@ -6,8 +6,9 @@
     export let money = 0;
     export let happiness = 0;
     export let knowledge = 0;
+    export let isCurrentPlayer =false;
+    export let isCurrentTurn = false;
     export let relationship = 0;
-    
     export let age0_12: { type: string, description: string }[] = [];
     export let age13_18: { type: string, description: string }[] = [];
     export let age19_22: { type: string, description: string }[] = [];
