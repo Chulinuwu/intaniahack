@@ -6,6 +6,7 @@
 	import TimeLeft from '../../components/TimeLeft.svelte';
 	import { getToken, connectWebSocket } from '$lib/auth';
 	import { goto } from '$app/navigation';
+    import bg from '$lib/assets/image/bg.gif';
 
 	// Lobby variables
 	let token = '';
@@ -425,9 +426,9 @@
 
 {#if !isGameStarted}
 	<!-- Lobby Interface -->
-	<div class="flex min-h-screen items-center justify-center bg-gray-100">
-		<div class="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
-			<h1 class="mb-6 text-center text-3xl font-bold text-gray-800">Lobby</h1>
+	<div class="min-h-screen p-4 flex items-center justify-center relative" style={`background-image: url('${bg}'); background-size: cover; background-position: center; background-color: rgba(0, 0, 0, 0.5); background-blend-mode: darken;`}>
+		<div class="w-full max-w-md rounded-md shadow-xl py-4 px-8 border">
+			<h1 class="mb-2 text-center text-3xl font-bold text-white">Lobby</h1>
 
 			{#if error}
 				<p class="mb-4 text-center text-sm text-red-500">{error}</p>
@@ -446,7 +447,7 @@
 					</select>
 					<button
 						on:click={hostGame}
-						class="mt-2 w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition duration-300 hover:bg-blue-700"
+						class="mt-2 w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition duration-300 hover:bg-blue-700"
 					>
 						Host Game
 					</button>
@@ -461,7 +462,7 @@
 					/>
 					<button
 						on:click={joinGame}
-						class="mt-2 w-full rounded-lg bg-green-600 py-3 font-semibold text-white transition duration-300 hover:bg-green-700"
+						class="mt-2 w-full rounded-lg bg-green-600 py-3 font-medium text-white transition duration-300 hover:bg-green-700"
 					>
 						Join Game
 					</button>
@@ -469,16 +470,16 @@
 			</div>
 
 			{#if roomId}
-				<h2 class="mt-6 text-xl font-semibold text-gray-800">Room ID: {roomId}</h2>
+				<h2 class="mt-2 text-xl font-medium text-white">Room ID: {roomId}</h2>
 			{/if}
 
-			{#if topic}
-				<p class="mt-2 text-gray-600">Topic: {topic}</p>
-			{/if}
+			<!-- {#if topic}
+				<p class="mt-2 text-white">Topic: {topic}</p>
+			{/if} -->
 
 			{#if players.length > 0}
-				<h3 class="mt-4 text-lg font-semibold text-gray-800">Players:</h3>
-				<ul class="list-disc pl-5">
+				<h3 class="mt-1 text-lg font-medium text-white">Players:</h3>
+				<ul class="list-disc pl-5 text-white">
 					{#each players as player}
 						<li class:text-blue-600={player === host}>
 							{player}
@@ -489,13 +490,13 @@
 			{/if}
 
 			{#if gameStatus}
-				<p class="mt-4 text-center text-gray-600">{gameStatus}</p>
+				<p class="mt-2 text-center text-white">{gameStatus}</p>
 			{/if}
 
 			{#if gameStatus && currentUsername === host}
 				<button
 					on:click={startGame}
-					class="mt-4 w-full rounded-lg bg-purple-600 py-3 font-semibold text-white transition duration-300 hover:bg-purple-700"
+					class="mt-2 w-full rounded-lg bg-purple-600 py-3 font-semibold text-white transition duration-300 hover:bg-purple-700"
 				>
 					Start Game
 				</button>
@@ -766,14 +767,14 @@
 		{notification}
 	</div>
 {/if}
-<div class="text-xs">AGE {currentAge.label}</div>
+<!-- <div class="text-xs">AGE {currentAge.label}</div>
 <div class="mb-2 mt-1 text-sm font-bold">
 	{#if isMyTurn}
 		<span class="text-green-400">It's your turn!</span>
 	{:else}
 		<span class="text-yellow-300">Waiting for other players...</span>
 	{/if}
-</div>
+</div> -->
 
 <style>
 	.space-y-4 > * + * {
