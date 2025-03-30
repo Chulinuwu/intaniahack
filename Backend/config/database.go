@@ -7,7 +7,6 @@ import (
 
 	"backend-go/models"
 
-	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
