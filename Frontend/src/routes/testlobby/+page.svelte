@@ -1,3 +1,4 @@
+<!-- 1. เพิ่มตัวแปรสำหรับแสดงผลลัพธ์เกม -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import CompetiterCard from '../../components/CompetiterCard.svelte';
@@ -22,6 +23,10 @@
 
 	// Game state flag
 	let isGameStarted = false;
+	
+	// Game over flag and results
+	let isGameOver = false;
+	let gameResults = [];
 
 	// Game variables
 	let handCards = [];
@@ -130,6 +135,7 @@
 		// Game initialization
 		if (data.event === 'game_initialized') {
 			isGameStarted = true;
+			isGameOver = false; // Reset game over state
 			currentAgeIndex = data.current_age;
 			ageRanges = data.age_ranges.map((range, i) => ({
 				label: range,
@@ -191,7 +197,7 @@
 		// Show game results modal
 		isGameOver = true;
 		gameResults = results;
-		// You would implement a modal or screen to show these results
+		showNotification('Game Over! The results are in!');
 	}
 
 	// Game functions
@@ -202,81 +208,32 @@
 	function getDeck() {
 		console.log('Deck clicked!');
 
-		// Simulate fetch from events-data.json
-		// In production, replace with actual fetch
-		// const sampleCards = [
-		// 	{
-		// 		type: 'money',
-		// 		pic: '../src/lib/assets/image/play/money.png',
-		// 		description: 'Saved money from part-time job',
-		// 		money: 5,
-		// 		happiness: 2,
-		// 		knowledge: 0,
-		// 		relationship: 0
-		// 	},
-		// 	{
-		// 		type: 'happiness',
-		// 		pic: '../src/lib/assets/image/play/money.png',
-		// 		description: 'Went to a fun summer camp',
-		// 		money: -2,
-		// 		happiness: 5,
-		// 		knowledge: 3,
-		// 		relationship: 4
-		// 	},
-		// 	{
-		// 		type: 'knowledge',
-		// 		pic: '../src/lib/assets/image/play/money.png',
-		// 		description: 'Studied hard for exams',
-		// 		money: 0,
-		// 		happiness: -1,
-		// 		knowledge: 6,
-		// 		relationship: 0
-		// 	},
-		// 	{
-		// 		type: 'relationship',
-		// 		pic: '../src/lib/assets/image/play/money.png',
-		// 		description: 'Made new friends at school',
-		// 		money: 0,
-		// 		happiness: 4,
-		// 		knowledge: 2,
-		// 		relationship: 5
-		// 	},
-		// 	{
-		// 		type: 'money',
-		// 		pic: '../src/lib/assets/image/play/money.png',
-		// 		description: 'Birthday money from relatives',
-		// 		money: 3,
-		// 		happiness: 3,
-		// 		knowledge: 0,
-		// 		relationship: 1
-		// 	},
-		// 	{
-		// 		type: 'knowledge',
-		// 		pic: '../src/lib/assets/image/play/money.png',
-		// 		description: 'Read many books from library',
-		// 		money: 0,
-		// 		happiness: 2,
-		// 		knowledge: 5,
-		// 		relationship: 0
-		// 	}
-		// ];
-
-		// handCards = sampleCards;
-		ws.send(
-			JSON.stringify({
-				event: 'request_cards',
-				room_id: roomId,
-				player_index: players.findIndex((p) => p === currentUsername),
-				data: {
-					age_index: currentAgeIndex,
-					count: 6 // Request 6 cards
-				}
-			})
-		);
+		// Request cards from server only if it's the player's turn
+		if (isMyTurn) {
+			ws.send(
+				JSON.stringify({
+					event: 'request_cards',
+					room_id: roomId,
+					player_index: players.findIndex((p) => p === currentUsername),
+					data: {
+						age_index: currentAgeIndex,
+						count: 6 // Request 6 cards
+					}
+				})
+			);
+		} else {
+			showNotification("It's not your turn yet. Please wait.");
+		}
 	}
 
 	// Card selection functions
 	function selectCard(card, index, source, ageIndex = null) {
+		// Allow card selection only during player's turn
+		if (!isMyTurn) {
+			showNotification("It's not your turn. You can't select cards now.");
+			return;
+		}
+		
 		if (
 			selectedCardIndex === index &&
 			selectedCardSource === source &&
@@ -295,6 +252,11 @@
 	}
 
 	function moveCardToSlot(slotIndex) {
+		if (!isMyTurn) {
+			showNotification("It's not your turn. You can't move cards now.");
+			return;
+		}
+		
 		if (!selectedCard || selectedCardSource === null) return;
 
 		if (selectedCardSource === 'hand' && selectedCardIndex !== null) {
@@ -317,6 +279,11 @@
 	}
 
 	function trashCard() {
+		if (!isMyTurn) {
+			showNotification("It's not your turn. You can't trash cards now.");
+			return;
+		}
+		
 		if (!selectedCard || selectedCardSource === null) return;
 
 		if (selectedCardSource === 'hand' && selectedCardIndex !== null) {
@@ -346,13 +313,14 @@
 	}
 
 	function handleSubmit() {
-		if (!ws) return;
+		if (!ws || !isMyTurn) return;
 
 		// Collect all placed cards for the current age
 		const eventIDs = currentAge.data.filter((card) => card !== null).map((card) => card.id);
 
 		if (eventIDs.length === 0) {
 			// Show error or warning if no cards placed
+			showNotification("You need to place at least one card before confirming your choice.");
 			return;
 		}
 
@@ -416,6 +384,18 @@
 
 	function returnToLobby() {
 		isGameStarted = false;
+		isGameOver = false;
+	}
+	
+	function playAgain() {
+		isGameOver = false;
+		if (currentUsername === host) {
+			// Host can start a new game
+			startGame();
+		} else {
+			// Non-hosts just wait for host to start
+			showNotification("Waiting for the host to start a new game.");
+		}
 	}
 
 	onDestroy(() => {
@@ -502,6 +482,74 @@
 			{/if}
 		</div>
 	</div>
+{:else if isGameOver}
+	<!-- Game Results Interface -->
+	<div
+		class="flex h-full w-full flex-col items-center justify-center px-5 py-2"
+		style="background-image: url('../src/lib/assets/image/play-bg.png'); background-size: cover; background-position: center; height: 100vh;"
+	>
+		<div class="w-full max-w-3xl rounded-xl bg-white bg-opacity-90 p-6 shadow-lg">
+			<h1 class="mb-4 text-center text-3xl font-bold text-gray-800">Game Results</h1>
+			
+			<div class="mb-6">
+				<h2 class="mb-2 text-xl font-semibold text-center">{topic || 'Game Results'}</h2>
+				<p class="text-center text-gray-600">See who made the most of their life!</p>
+			</div>
+			
+			<div class="space-y-4">
+				{#each gameResults as result, index}
+					<div class="flex items-center justify-between rounded-lg bg-gray-100 p-4 {index === 0 ? 'bg-yellow-100 border-2 border-yellow-400' : ''}">
+						<div class="flex items-center">
+							<span class="mr-2 font-bold">{index + 1}.</span>
+							<div class="ml-2">
+								<p class="font-bold">{result.username} {index === 0 ? '👑' : ''}</p>
+								<div class="flex flex-wrap gap-2 mt-1">
+									<div class="flex items-center">
+										<img src={iconMapColor['money']} alt="money icon" class="mr-1 h-4" />
+										<span>{result.stats.money}</span>
+									</div>
+									<div class="flex items-center">
+										<img src={iconMapColor['happiness']} alt="happiness icon" class="mr-1 h-4" />
+										<span>{result.stats.happiness}</span>
+									</div>
+									<div class="flex items-center">
+										<img src={iconMapColor['knowledge']} alt="knowledge icon" class="mr-1 h-4" />
+										<span>{result.stats.knowledge}</span>
+									</div>
+									<div class="flex items-center">
+										<img src={iconMapColor['relationship']} alt="relationship icon" class="mr-1 h-4" />
+										<span>{result.stats.relationship}</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="text-right">
+							<p class="text-xl font-bold">{result.total_score}</p>
+							<p class="text-sm text-gray-600">Total Score</p>
+						</div>
+					</div>
+				{/each}
+			</div>
+			
+			<div class="mt-6 flex justify-center gap-4">
+				<button
+					on:click={returnToLobby}
+					class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white transition duration-300 hover:bg-blue-700"
+				>
+					Return to Lobby
+				</button>
+				
+				{#if currentUsername === host}
+					<button
+						on:click={playAgain}
+						class="rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition duration-300 hover:bg-green-700"
+					>
+						Play Again
+					</button>
+				{/if}
+			</div>
+		</div>
+	</div>
 {:else}
 	<!-- Game Interface -->
 	<div
@@ -531,7 +579,7 @@
 			<button
 				class="mt-10 hover:scale-110 disabled:opacity-50"
 				on:click={() => changeAge(-1)}
-				disabled={currentAgeIndex === 0}
+				disabled={currentAgeIndex === 0 || !isMyTurn}
 			>
 				<img src="../src/lib/assets/icon/left.svg" alt="left icon" class="h-5" />
 			</button>
@@ -539,11 +587,18 @@
 				<div class="text-sm">{topic || 'GET THE MOST MONEY'}</div>
 				<TimeLeft />
 				<div class="text-xs">AGE {currentAge.label}</div>
+				<div class="mb-2 mt-1 text-sm font-bold">
+					{#if isMyTurn}
+						<span class="text-green-400">It's your turn!</span>
+					{:else}
+						<span class="text-yellow-300">Waiting for other players...</span>
+					{/if}
+				</div>
 				<!-- Drop Zones for current age -->
 				<div class="mt-2 flex gap-3">
 					{#each currentAge.data as card, i}
 						<div
-							class="flex h-32 w-24 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-white"
+							class="flex h-32 w-24 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-white {!isMyTurn ? 'opacity-80' : ''}"
 							on:click={() => {
 								if (card) {
 									selectCard(card, i, 'dropzone', currentAgeIndex);
@@ -551,7 +606,7 @@
 									moveCardToSlot(i);
 								}
 							}}
-							class:bg-[#474848]={selectedCard && !card}
+							class:bg-[#474848]={selectedCard && !card && isMyTurn}
 						>
 							{#if card}
 								<div
@@ -571,7 +626,7 @@
 			<button
 				class="mt-10 hover:scale-110 disabled:opacity-50"
 				on:click={() => changeAge(1)}
-				disabled={currentAgeIndex === ageRanges.length - 1}
+				disabled={currentAgeIndex === ageRanges.length - 1 || !isMyTurn}
 			>
 				<img src="../src/lib/assets/icon/right.svg" alt="right icon" class="h-5" />
 			</button>
@@ -596,7 +651,7 @@
 			/>
 		</div>
 		<div class="flex w-full justify-between text-white">
-			<button on:click={() => getDeck()}>
+			<button on:click={() => getDeck()} class="{!isMyTurn ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105'}">
 				<img
 					src="../src/lib/assets/image/play/random-deck-button.svg"
 					alt="desk"
@@ -631,12 +686,21 @@
 						</div>
 					</div>
 					<div class="flex flex-col gap-2">
-						<button
-							on:click={() => handleSubmit()}
-							class="flex cursor-pointer items-center justify-center rounded-md bg-red-500 p-2 transition duration-200 hover:bg-red-600"
-						>
-							Confirm your choice
-						</button>
+						{#if isMyTurn}
+							<button
+								on:click={() => handleSubmit()}
+								class="flex cursor-pointer items-center justify-center rounded-md bg-red-500 p-2 transition duration-200 hover:bg-red-600"
+							>
+								Confirm your choice
+							</button>
+						{:else}
+							<button
+								disabled
+								class="flex cursor-not-allowed items-center justify-center rounded-md bg-gray-500 p-2 opacity-50"
+							>
+								Waiting for your turn...
+							</button>
+						{/if}
 						<button
 							on:click={returnToLobby}
 							class="flex cursor-pointer items-center justify-center rounded-md bg-blue-500 p-2 transition duration-200 hover:bg-blue-600"
@@ -676,8 +740,10 @@
 					</div>
 				</div>
 				<div
-					class="relative flex h-[114px] w-[530px] cursor-pointer items-center justify-center gap-2 rounded-md border border-white bg-[#474848]"
+					class="relative flex h-[114px] w-[530px] cursor-pointer items-center justify-center gap-2 rounded-md border border-white bg-[#474848] {!isMyTurn ? 'opacity-80' : ''}"
 					on:click={(e) => {
+						if (!isMyTurn) return;
+						
 						const target = e.target as HTMLElement;
 						if (selectedCard && !target.closest('.play-card-container')) {
 							if (
@@ -691,7 +757,7 @@
 							resetSelection();
 						}
 					}}
-					class:bg-[#5a5b5b]={selectedCard && selectedCardSource === 'dropzone'}
+					class:bg-[#5a5b5b]={selectedCard && selectedCardSource === 'dropzone' && isMyTurn}
 				>
 					{#each handCards as card, index}
 						<div
@@ -743,9 +809,9 @@
 						</div>
 					</div>
 					<div
-						class="relative w-[75px] cursor-pointer transition-transform duration-200"
+						class="relative w-[75px] cursor-pointer transition-transform duration-200 {!isMyTurn ? 'opacity-60 cursor-not-allowed' : ''}"
 						on:click={trashCard}
-						class:scale-110={selectedCard !== null}
+						class:scale-110={selectedCard !== null && isMyTurn}
 					>
 						<img src="../src/lib/assets/image/play/bin.svg" alt="bin" class="h-[73px] w-full" />
 						{#if selectedCard}
@@ -766,14 +832,6 @@
 		{notification}
 	</div>
 {/if}
-<div class="text-xs">AGE {currentAge.label}</div>
-<div class="mb-2 mt-1 text-sm font-bold">
-	{#if isMyTurn}
-		<span class="text-green-400">It's your turn!</span>
-	{:else}
-		<span class="text-yellow-300">Waiting for other players...</span>
-	{/if}
-</div>
 
 <style>
 	.space-y-4 > * + * {
