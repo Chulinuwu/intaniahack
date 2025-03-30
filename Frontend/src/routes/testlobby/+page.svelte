@@ -1,4 +1,3 @@
-<!-- 1. เพิ่มตัวแปรสำหรับแสดงผลลัพธ์เกม -->
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import CompetiterCard from '../../components/CompetiterCard.svelte';
@@ -34,6 +33,9 @@
 	let currentAgeIndex = 0;
 	$: currentAge = ageRanges[currentAgeIndex];
 
+	// Current event information
+	let currentEvent = null;
+
 	// Topics for host to choose
 	const topics = [
 		'GET THE MOST Money',
@@ -67,6 +69,19 @@
 	let selectedCardSource = null;
 	let selectedAgeIndex = null;
 
+	// Variables to track turn state
+	let isMyTurn = false;
+	let currentEventChoices = [];
+	let allPlayerStats = [];
+
+	// Game notification system
+	let notification = '';
+	let notificationTimer = null;
+
+	// Game progress
+	let currentAgeProgress = 0;
+	let totalAges = 7;
+
 	onMount(async () => {
 		token = getToken() || '';
 		if (!token) {
@@ -90,6 +105,16 @@
 		}
 		if (ws) ws.close();
 		ws = connectWebSocket(token, '/host', '', handleMessage);
+
+		// Send topic with the connection if needed
+		if (ws && ws.readyState === WebSocket.OPEN) {
+			ws.send(
+				JSON.stringify({
+					Authorization: `Bearer ${token}`,
+					topic: selectedTopic
+				})
+			);
+		}
 	}
 
 	function joinGame() {
@@ -106,10 +131,7 @@
 		if (ws) {
 			ws.send(JSON.stringify({ event: 'start_game', room_id: roomId }));
 		}
-		// Instead of navigating to a new page, we just switch the view
 		isGameStarted = true;
-		// Initialize game by getting initial cards
-		getDeck();
 	}
 
 	function handleMessage(data) {
@@ -138,13 +160,21 @@
 			isGameStarted = true;
 			isGameOver = false; // Reset game over state
 			currentAgeIndex = data.current_age;
-			ageRanges = data.age_ranges.map((range, i) => ({
-				label: range,
-				data: ageRanges[i].data // Keep existing data structure
-			}));
 
-			// Update player data
-			updatePlayerData(data.players);
+			// Update age ranges if provided
+			if (data.age_ranges && data.age_ranges.length > 0) {
+				ageRanges = data.age_ranges.map((range, i) => ({
+					label: range,
+					data: ageRanges[i].data // Keep existing data structure
+				}));
+			}
+
+			// Initialize player stats
+			if (data.players) {
+				updatePlayerStats(data.players);
+			}
+
+			showNotification('Game started! Waiting for first player...');
 		}
 
 		// Turn management
@@ -161,7 +191,19 @@
 		// Age progression
 		if (data.event === 'age_advanced') {
 			currentAgeIndex = data.age_index;
-			updatePlayerData(data.players);
+			currentAgeProgress = Math.floor((currentAgeIndex / (totalAges - 1)) * 100);
+
+			if (data.players) {
+				updatePlayerStats(data.players);
+			}
+
+			// Reset dropped cards for new age
+			ageRanges = ageRanges.map((age, i) => ({
+				...age,
+				data: i === currentAgeIndex ? Array(5).fill(null) : age.data
+			}));
+
+			showNotification(`Age advanced to ${data.age_range.Label}`);
 		}
 
 		// Game results
@@ -178,24 +220,25 @@
 			console.log('Updated handCards:', handCards);
 		}
 	}
-	// Add these to your script section
-	let notification = '';
-	let notificationTimer = null;
-	let playerStats = [];
 
 	function showNotification(message) {
 		notification = message;
 		if (notificationTimer) clearTimeout(notificationTimer);
 		notificationTimer = setTimeout(() => {
 			notification = '';
-		}, 3000);
+		}, 5000);
 	}
 
 	function showEventResult(event, playerName) {
 		// Show a modal or notification with the event result
-		showNotification(
-			`${playerName}: ${event.description} ${event.choice_made ? `(Chose: ${event.choice_made})` : ''}`
-		);
+		if (!event || !event.description) return;
+
+		let message = `${playerName}: ${event.description}`;
+		if (event.choice_made) {
+			message += ` (Chose: ${event.choice_made})`;
+		}
+
+		showNotification(message);
 	}
 
 	function showGameResults(results) {
@@ -207,19 +250,23 @@
 
 	// Game functions
 	function changeAge(direction) {
+		if (!isMyTurn) return;
 		currentAgeIndex = Math.max(0, Math.min(ageRanges.length - 1, currentAgeIndex + direction));
 	}
 
 	function getDeck() {
-		console.log('Deck clicked!');
+		console.log('Requesting cards...');
 
 		// Request cards from server only if it's the player's turn
-		if (isMyTurn) {
+		if (isMyTurn && ws) {
+			const playerIndex = players.indexOf(currentUsername);
+			if (playerIndex === -1) return;
+
 			ws.send(
 				JSON.stringify({
 					event: 'request_cards',
 					room_id: roomId,
-					player_index: players.findIndex((p) => p === currentUsername),
+					player_index: playerIndex,
 					data: {
 						age_index: currentAgeIndex,
 						count: 6 // Request 6 cards
@@ -320,45 +367,108 @@
 	function handleSubmit() {
 		if (!ws || !isMyTurn) return;
 
-		// Collect all placed cards for the current age
+		// For choice events, handle differently than card placement
+		if (currentEvent && currentEvent.Type === 'choice' && selectedCardIndex !== null) {
+			// For choice events, send the selected choice ID
+			const choiceId = currentEvent.Choices?.[selectedCardIndex]?.ID || 'default_choice';
+
+			ws.send(
+				JSON.stringify({
+					event: 'make_choice',
+					room_id: roomId,
+					player_index: players.indexOf(currentUsername),
+					event_id: currentEvent.ID,
+					choice_id: choiceId
+				})
+			);
+
+			resetSelection();
+			return;
+		}
+
+		// For card placement, collect all placed cards
 		const eventIDs = currentAge.data.filter((card) => card !== null).map((card) => card.id);
 
 		if (eventIDs.length === 0) {
-			// Show error or warning if no cards placed
+			// If we have a current event but no cards placed, send the event ID directly
+			if (currentEvent) {
+				ws.send(
+					JSON.stringify({
+						event: 'make_choice',
+						room_id: roomId,
+						player_index: players.indexOf(currentUsername),
+						event_id: currentEvent.ID,
+						choice_id: 'default_choice'
+					})
+				);
+				return;
+			}
+
+			// Show error if no cards and no current event
 			showNotification('You need to place at least one card before confirming your choice.');
 			return;
 		}
 
-		// Send choices to backend
+		// Send choices to backend with multiple event IDs
 		ws.send(
 			JSON.stringify({
 				event: 'make_choice',
 				room_id: roomId,
-				player_index: players.findIndex((p) => p === currentUsername),
-				choice_id: 'selected_choice', // This would be for choice events
+				player_index: players.indexOf(currentUsername),
+				choice_id: 'selected_choice',
 				data: {
 					event_ids: eventIDs
 				}
 			})
 		);
+
+		// Clear placed cards after submission
+		ageRanges[currentAgeIndex].data = Array(5).fill(null);
 	}
-	// Variables to track turn state
-	let isMyTurn = false;
-	let currentEvent = null;
 
 	function handleTurnStart(data) {
 		isMyTurn = data.player_name === currentUsername;
 		currentEvent = data.event_data;
 
-		if (isMyTurn) {
-			// Show turn notification
-			showNotification(`It's your turn!`);
+		// If it's a choice event, prepare choices for display
+		if (currentEvent && currentEvent.Type === 'choice' && currentEvent.Choices) {
+			currentEventChoices = currentEvent.Choices;
 
-			// Request cards if we don't have any
-			if (handCards.length === 0) {
+			// If it's a choice event, add choices to hand cards
+			if (isMyTurn) {
+				handCards = currentEvent.Choices.map((choice, index) => ({
+					id: choice.ID,
+					type: 'choice',
+					description: choice.Description,
+					money: getEffectValue(choice.Effects, 'money'),
+					happiness: getEffectValue(choice.Effects, 'happiness'),
+					knowledge: getEffectValue(choice.Effects, 'knowledge'),
+					relationship: getEffectValue(choice.Effects, 'relationship'),
+					pic: `../src/lib/imggen/choice_${index}.png` // Placeholder image
+				}));
+			}
+		} else {
+			currentEventChoices = [];
+
+			// For regular events, show the event in the slot
+			if (isMyTurn) {
+				// Clear previous cards
+				handCards = [];
+				// Request cards for placement
 				getDeck();
 			}
 		}
+
+		if (isMyTurn) {
+			// Show turn notification
+			showNotification(`It's your turn! ${currentEvent?.Description || ''}`);
+		}
+	}
+
+	function getEffectValue(effects, stat) {
+		if (!effects) return 0;
+		const effect = effects.find((e) => e.Stat === stat);
+		return effect ? effect.Value : 0;
 	}
 
 	function handleWaitingForTurn(data) {
@@ -367,29 +477,100 @@
 	}
 
 	function handleTurnResult(data) {
-		// Update player stats
-		const playerIndex = players.findIndex((p) => p === data.player_name);
-		if (playerIndex >= 0) {
-			playerStats[playerIndex] = data.player_stats;
+		// Update displayed stats for the player
+		const playerIndex = players.indexOf(data.player_name);
+		if (playerIndex >= 0 && data.player_stats) {
+			updatePlayerStat(playerIndex, data.player_stats);
 		}
 
 		// Show event result
 		showEventResult(data.life_event, data.player_name);
+
+		// Reset current event
+		if (data.player_name === currentUsername) {
+			currentEvent = null;
+			currentEventChoices = [];
+			// Clear placed cards
+			ageRanges[currentAgeIndex].data = Array(5).fill(null);
+		}
 	}
 
-	function updatePlayerData(playersData) {
+	function updatePlayerStats(playersData) {
+		// Initialize the stats array if it doesn't exist
+		if (!allPlayerStats || allPlayerStats.length === 0) {
+			allPlayerStats = Array(players.length)
+				.fill(null)
+				.map(() => ({
+					money: 50,
+					happiness: 50,
+					knowledge: 50,
+					relationship: 50
+				}));
+		}
+
 		// Update player statistics from server data
-		playerStats = playersData.map((p) => ({
-			money: p.money,
-			happiness: p.happiness,
-			knowledge: p.knowledge,
-			relationship: p.relationship
-		}));
+		playersData.forEach((playerData, index) => {
+			if (index < allPlayerStats.length) {
+				allPlayerStats[index] = {
+					money: playerData.money,
+					happiness: playerData.happiness,
+					knowledge: playerData.knowledge,
+					relationship: playerData.relationship
+				};
+			}
+		});
+	}
+
+	function updatePlayerStat(playerIndex, stats) {
+		if (!allPlayerStats) {
+			allPlayerStats = Array(players.length)
+				.fill(null)
+				.map(() => ({
+					money: 50,
+					happiness: 50,
+					knowledge: 50,
+					relationship: 50
+				}));
+		}
+
+		if (playerIndex >= 0 && playerIndex < allPlayerStats.length) {
+			allPlayerStats[playerIndex] = {
+				money: stats.money,
+				happiness: stats.happiness,
+				knowledge: stats.knowledge,
+				relationship: stats.relationship
+			};
+		}
 	}
 
 	function returnToLobby() {
 		isGameStarted = false;
 		isGameOver = false;
+
+		// Reset game state
+		handCards = [];
+		currentAgeIndex = 0;
+		resetAllDroppedCards();
+	}
+
+	function resetAllDroppedCards() {
+		droppedCards0_12 = Array(5).fill(null);
+		droppedCards13_18 = Array(5).fill(null);
+		droppedCards19_22 = Array(5).fill(null);
+		droppedCards23_39 = Array(5).fill(null);
+		droppedCards40_59 = Array(5).fill(null);
+		droppedCards60_79 = Array(5).fill(null);
+		droppedCards80_100 = Array(5).fill(null);
+
+		ageRanges = [
+			{ label: '0 - 12', data: droppedCards0_12 },
+			{ label: '13 - 18', data: droppedCards13_18 },
+			{ label: '19 - 22', data: droppedCards19_22 },
+			{ label: '23 - 39', data: droppedCards23_39 },
+			{ label: '40 - 59', data: droppedCards40_59 },
+			{ label: '60 - 79', data: droppedCards60_79 },
+			{ label: '80 - 100', data: droppedCards80_100 }
+		];
 	}
 
 	function playAgain() {
@@ -405,6 +586,7 @@
 
 	onDestroy(() => {
 		if (ws) ws.close();
+		if (notificationTimer) clearTimeout(notificationTimer);
 	});
 </script>
 
@@ -460,9 +642,9 @@
 				<h2 class="mt-2 text-xl font-medium text-white">Room ID: {roomId}</h2>
 			{/if}
 
-			<!-- {#if topic}
+			{#if topic}
 				<p class="mt-2 text-white">Topic: {topic}</p>
-			{/if} -->
+			{/if}
 
 			{#if players.length > 0}
 				<h3 class="mt-1 text-lg font-medium text-white">Players:</h3>
@@ -573,25 +755,31 @@
 		style="background-image: url('../src/lib/assets/image/play-bg.png'); background-size: cover; background-position: center; height: 100vh;"
 	>
 		<div class="flex w-full justify-between">
-			<CompetiterCard
-				profileImage="../src/lib/assets/image/profile.jpg"
-				playerName="John Doe"
-				money={1000}
-				happiness={80}
-				knowledge={90}
-				relationship={70}
-				age0_12={[
-					{ type: 'money', description: 'Learning and growing.' },
-					{ type: 'happiness', description: 'Exploring and discovering.' },
-					{ type: 'relationship', description: 'Building a career and relationships.' },
-					{ type: 'knowledge', description: 'Learning and growing.' }
-				]}
-				age13_18={[
-					{ type: 'money', description: 'Learning and growing.' },
-					{ type: 'knowledge', description: 'Exploring and discovering.' },
-					{ type: 'relationship', description: 'Building a career and relationships.' }
-				]}
-			/>
+			<!-- Display player cards based on actual players -->
+			{#if players.length > 0 && allPlayerStats && allPlayerStats.length > 0}
+				<!-- First player card (can be host or first player) -->
+				<CompetiterCard
+					profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${players[0]}`}
+					playerName={players[0]}
+					money={allPlayerStats[0]?.money || 50}
+					happiness={allPlayerStats[0]?.happiness || 50}
+					knowledge={allPlayerStats[0]?.knowledge || 50}
+					relationship={allPlayerStats[0]?.relationship || 50}
+					isCurrentPlayer={players[0] === currentUsername}
+					isCurrentTurn={isMyTurn && players[0] === currentUsername}
+				/>
+			{:else}
+				<!-- Placeholder if no player data yet -->
+				<CompetiterCard
+					profileImage="../src/lib/assets/image/profile.jpg"
+					playerName="Player 1"
+					money={50}
+					happiness={50}
+					knowledge={50}
+					relationship={50}
+				/>
+			{/if}
+
 			<button
 				class="mt-10 hover:scale-110 disabled:opacity-50"
 				on:click={() => changeAge(-1)}
@@ -599,10 +787,28 @@
 			>
 				<img src="../src/lib/assets/icon/left.svg" alt="left icon" class="h-5" />
 			</button>
+
 			<div class="flex flex-col text-center text-white">
 				<div class="text-sm">{topic || 'GET THE MOST MONEY'}</div>
 				<TimeLeft />
 				<div class="text-xs">AGE {currentAge.label}</div>
+
+				<!-- Current event display -->
+				{#if currentEvent}
+					<div class="mb-2 mt-1 text-sm">
+						{currentEvent.Description}
+					</div>
+				{/if}
+
+				<!-- Turn indicator -->
+				<div class="mb-2 text-sm font-bold">
+					{#if isMyTurn}
+						<span class="text-green-400">It's your turn!</span>
+					{:else}
+						<span class="text-yellow-300">Waiting for other players...</span>
+					{/if}
+				</div>
+
 				<!-- Drop Zones for current age -->
 				<div class="mt-2 flex gap-3">
 					{#each currentAge.data as card, i}
@@ -634,6 +840,7 @@
 					{/each}
 				</div>
 			</div>
+
 			<button
 				class="mt-10 hover:scale-110 disabled:opacity-50"
 				on:click={() => changeAge(1)}
@@ -641,26 +848,32 @@
 			>
 				<img src="../src/lib/assets/icon/right.svg" alt="right icon" class="h-5" />
 			</button>
-			<CompetiterCard
-				profileImage="../src/lib/assets/image/profile.jpg"
-				playerName="John Doe"
-				money={1000}
-				happiness={80}
-				knowledge={90}
-				relationship={70}
-				age0_12={[
-					{ type: 'money', description: 'Learning and growing.' },
-					{ type: 'happiness', description: 'Exploring and discovering.' },
-					{ type: 'relationship', description: 'Building a career and relationships.' },
-					{ type: 'knowledge', description: 'Learning and growing.' }
-				]}
-				age13_18={[
-					{ type: 'money', description: 'Learning and growing.' },
-					{ type: 'knowledge', description: 'Exploring and discovering.' },
-					{ type: 'relationship', description: 'Building a career and relationships.' }
-				]}
-			/>
+
+			{#if players.length > 1 && allPlayerStats && allPlayerStats.length > 1}
+				<!-- Second player card (if exists) -->
+				<CompetiterCard
+					profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${players[1]}`}
+					playerName={players[1]}
+					money={allPlayerStats[1]?.money || 50}
+					happiness={allPlayerStats[1]?.happiness || 50}
+					knowledge={allPlayerStats[1]?.knowledge || 50}
+					relationship={allPlayerStats[1]?.relationship || 50}
+					isCurrentPlayer={players[1] === currentUsername}
+					isCurrentTurn={isMyTurn && players[1] === currentUsername}
+				/>
+			{:else}
+				<!-- Placeholder if no second player yet -->
+				<CompetiterCard
+					profileImage="../src/lib/assets/image/profile.jpg"
+					playerName="Player 2"
+					money={50}
+					happiness={50}
+					knowledge={50}
+					relationship={50}
+				/>
+			{/if}
 		</div>
+
 		<div class="flex w-full justify-between text-white">
 			<button
 				on:click={() => getDeck()}
@@ -672,22 +885,35 @@
 					class="h-[165px] w-[169px]"
 				/>
 			</button>
+
 			<div class="flex flex-col gap-1">
 				<div class="flex justify-between">
 					<div class="flex flex-col">
-						<div class="text-2xl">REMAINING COST</div>
+						<div class="text-2xl">GAME PROGRESS</div>
 						<div class="flex gap-2">
 							<div class="flex items-center px-1">
 								<img src={iconMapColor['money']} alt={`money icon`} class="mr-0.5 h-4" />
-								<span class="text-sm font-medium">10</span>
+								<span class="text-sm font-medium">
+									{allPlayerStats && players.indexOf(currentUsername) !== -1
+										? allPlayerStats[players.indexOf(currentUsername)]?.money || 50
+										: 50}
+								</span>
 							</div>
 							<div class="flex items-center px-1">
 								<img src={iconMapColor['happiness']} alt={`happiness icon`} class="mr-0.5 h-4" />
-								<span class="text-sm font-medium">10</span>
+								<span class="text-sm font-medium">
+									{allPlayerStats && players.indexOf(currentUsername) !== -1
+										? allPlayerStats[players.indexOf(currentUsername)]?.happiness || 50
+										: 50}
+								</span>
 							</div>
 							<div class="flex items-center px-1">
 								<img src={iconMapColor['knowledge']} alt={`knowledge icon`} class="mr-0.5 h-4" />
-								<span class="text-sm font-medium">10</span>
+								<span class="text-sm font-medium">
+									{allPlayerStats && players.indexOf(currentUsername) !== -1
+										? allPlayerStats[players.indexOf(currentUsername)]?.knowledge || 50
+										: 50}
+								</span>
 							</div>
 							<div class="flex items-center px-1">
 								<img
@@ -695,10 +921,15 @@
 									alt={`relationship icon`}
 									class="mr-0.5 h-4"
 								/>
-								<span class="text-sm font-medium">10</span>
+								<span class="text-sm font-medium">
+									{allPlayerStats && players.indexOf(currentUsername) !== -1
+										? allPlayerStats[players.indexOf(currentUsername)]?.relationship || 50
+										: 50}
+								</span>
 							</div>
 						</div>
 					</div>
+
 					<div class="flex flex-col gap-2">
 						{#if isMyTurn}
 							<button
@@ -715,6 +946,7 @@
 								Waiting for your turn...
 							</button>
 						{/if}
+
 						<button
 							on:click={returnToLobby}
 							class="flex cursor-pointer items-center justify-center rounded-md bg-blue-500 p-2 transition duration-200 hover:bg-blue-600"
@@ -722,6 +954,7 @@
 							Return to Lobby
 						</button>
 					</div>
+
 					<div class="flex flex-col items-center justify-center">
 						<div class="flex items-center gap-2">
 							<img
@@ -732,11 +965,12 @@
 							<div class="relative h-4 w-32 overflow-hidden rounded-full bg-[#D9D9D9]">
 								<div
 									class="absolute left-0 top-0 h-full bg-[#FF8787]"
-									style="width: calc((1 / 8) * 100%)"
+									style="width: calc({(currentAgeIndex / 6) * 100}%)"
 								></div>
 							</div>
-							<span class="text-sm font-medium">1</span>
+							<span class="text-sm font-medium">{currentAgeIndex + 1}</span>
 						</div>
+
 						<div class="flex items-center gap-2">
 							<img
 								src="../src/lib/assets/icon/PlayCard/hourglass.svg"
@@ -746,13 +980,14 @@
 							<div class="relative h-4 w-32 overflow-hidden rounded-full bg-[#D9D9D9]">
 								<div
 									class="absolute left-0 top-0 h-full bg-[#99624E]"
-									style="width: calc((7 / 8) * 100%)"
+									style="width: calc({((totalAges - currentAgeIndex - 1) / totalAges) * 100}%)"
 								></div>
 							</div>
-							<span class="text-sm font-medium">7</span>
+							<span class="text-sm font-medium">{totalAges - currentAgeIndex - 1}</span>
 						</div>
 					</div>
 				</div>
+
 				<div
 					class="relative flex h-[114px] w-[530px] cursor-pointer items-center justify-center gap-2 rounded-md border border-white bg-[#474848] {!isMyTurn
 						? 'opacity-80'
@@ -790,8 +1025,17 @@
 							<span class="text-sm text-white opacity-70">. . .</span>
 						</div>
 					{/if}
+
+					{#if handCards.length === 0 && isMyTurn}
+						<div class="text-sm text-white opacity-70">
+							{currentEvent?.Type === 'choice'
+								? 'Click to select a choice...'
+								: 'Click the deck to get cards...'}
+						</div>
+					{/if}
 				</div>
 			</div>
+
 			<div class="flex flex-col items-center justify-center gap-2">
 				<div class="flex gap-2">
 					<div class="relative w-[75px]">
@@ -843,6 +1087,7 @@
 		</div>
 	</div>
 {/if}
+
 {#if notification}
 	<div
 		class="fixed left-1/2 top-4 z-50 -translate-x-1/2 transform rounded-md bg-black bg-opacity-70 px-4 py-2 text-white"
@@ -850,15 +1095,6 @@
 		{notification}
 	</div>
 {/if}
-
-<!-- <div class="text-xs">AGE {currentAge.label}</div>
-<div class="mb-2 mt-1 text-sm font-bold">
-	{#if isMyTurn}
-		<span class="text-green-400">It's your turn!</span>
-	{:else}
-		<span class="text-yellow-300">Waiting for other players...</span>
-	{/if}
-</div> -->
 
 <style>
 	.space-y-4 > * + * {
