@@ -164,7 +164,11 @@
 
 		// Card deck response
 		if (data.event === 'card_deck') {
-			handCards = data.cards;
+			handCards = data.cards.map(card => ({
+				...card,
+				pic: `../src/lib/imggen/${card.id}.png` // Store the filename as string
+			}));
+			console.log('Updated handCards:', handCards);
 		}
 	}
 	// Add these to your script section
