@@ -7,7 +7,7 @@
 	import TimeLeft from '../../components/TimeLeft.svelte';
 	import { getToken, connectWebSocket } from '$lib/auth';
 	import { goto } from '$app/navigation';
-    import bg from '$lib/assets/image/bg.gif';
+	import bg from '$lib/assets/image/bg.gif';
 
 	// Lobby variables
 	let token = '';
@@ -24,7 +24,7 @@
 
 	// Game state flag
 	let isGameStarted = false;
-	
+
 	// Game over flag and results
 	let isGameOver = false;
 	let gameResults = [];
@@ -171,7 +171,7 @@
 
 		// Card deck response
 		if (data.event === 'card_deck') {
-			handCards = data.cards.map(card => ({
+			handCards = data.cards.map((card) => ({
 				...card,
 				pic: `../src/lib/imggen/${card.id}.png` // Store the filename as string
 			}));
@@ -238,7 +238,7 @@
 			showNotification("It's not your turn. You can't select cards now.");
 			return;
 		}
-		
+
 		if (
 			selectedCardIndex === index &&
 			selectedCardSource === source &&
@@ -261,7 +261,7 @@
 			showNotification("It's not your turn. You can't move cards now.");
 			return;
 		}
-		
+
 		if (!selectedCard || selectedCardSource === null) return;
 
 		if (selectedCardSource === 'hand' && selectedCardIndex !== null) {
@@ -288,7 +288,7 @@
 			showNotification("It's not your turn. You can't trash cards now.");
 			return;
 		}
-		
+
 		if (!selectedCard || selectedCardSource === null) return;
 
 		if (selectedCardSource === 'hand' && selectedCardIndex !== null) {
@@ -325,7 +325,7 @@
 
 		if (eventIDs.length === 0) {
 			// Show error or warning if no cards placed
-			showNotification("You need to place at least one card before confirming your choice.");
+			showNotification('You need to place at least one card before confirming your choice.');
 			return;
 		}
 
@@ -391,7 +391,7 @@
 		isGameStarted = false;
 		isGameOver = false;
 	}
-	
+
 	function playAgain() {
 		isGameOver = false;
 		if (currentUsername === host) {
@@ -399,7 +399,7 @@
 			startGame();
 		} else {
 			// Non-hosts just wait for host to start
-			showNotification("Waiting for the host to start a new game.");
+			showNotification('Waiting for the host to start a new game.');
 		}
 	}
 
@@ -410,8 +410,11 @@
 
 {#if !isGameStarted}
 	<!-- Lobby Interface -->
-	<div class="min-h-screen p-4 flex items-center justify-center relative" style={`background-image: url('${bg}'); background-size: cover; background-position: center; background-color: rgba(0, 0, 0, 0.5); background-blend-mode: darken;`}>
-		<div class="w-full max-w-md rounded-md shadow-xl py-4 px-8 border">
+	<div
+		class="relative flex min-h-screen items-center justify-center p-4"
+		style={`background-image: url('${bg}'); background-size: cover; background-position: center; background-color: rgba(0, 0, 0, 0.5); background-blend-mode: darken;`}
+	>
+		<div class="w-full max-w-md rounded-md border px-8 py-4 shadow-xl">
 			<h1 class="mb-2 text-center text-3xl font-bold text-white">Lobby</h1>
 
 			{#if error}
@@ -495,20 +498,24 @@
 	>
 		<div class="w-full max-w-3xl rounded-xl bg-white bg-opacity-90 p-6 shadow-lg">
 			<h1 class="mb-4 text-center text-3xl font-bold text-gray-800">Game Results</h1>
-			
+
 			<div class="mb-6">
-				<h2 class="mb-2 text-xl font-semibold text-center">{topic || 'Game Results'}</h2>
+				<h2 class="mb-2 text-center text-xl font-semibold">{topic || 'Game Results'}</h2>
 				<p class="text-center text-gray-600">See who made the most of their life!</p>
 			</div>
-			
+
 			<div class="space-y-4">
 				{#each gameResults as result, index}
-					<div class="flex items-center justify-between rounded-lg bg-gray-100 p-4 {index === 0 ? 'bg-yellow-100 border-2 border-yellow-400' : ''}">
+					<div
+						class="flex items-center justify-between rounded-lg bg-gray-100 p-4 {index === 0
+							? 'border-2 border-yellow-400 bg-yellow-100'
+							: ''}"
+					>
 						<div class="flex items-center">
 							<span class="mr-2 font-bold">{index + 1}.</span>
 							<div class="ml-2">
 								<p class="font-bold">{result.username} {index === 0 ? '👑' : ''}</p>
-								<div class="flex flex-wrap gap-2 mt-1">
+								<div class="mt-1 flex flex-wrap gap-2">
 									<div class="flex items-center">
 										<img src={iconMapColor['money']} alt="money icon" class="mr-1 h-4" />
 										<span>{result.stats.money}</span>
@@ -522,7 +529,11 @@
 										<span>{result.stats.knowledge}</span>
 									</div>
 									<div class="flex items-center">
-										<img src={iconMapColor['relationship']} alt="relationship icon" class="mr-1 h-4" />
+										<img
+											src={iconMapColor['relationship']}
+											alt="relationship icon"
+											class="mr-1 h-4"
+										/>
 										<span>{result.stats.relationship}</span>
 									</div>
 								</div>
@@ -535,7 +546,7 @@
 					</div>
 				{/each}
 			</div>
-			
+
 			<div class="mt-6 flex justify-center gap-4">
 				<button
 					on:click={returnToLobby}
@@ -543,7 +554,7 @@
 				>
 					Return to Lobby
 				</button>
-				
+
 				{#if currentUsername === host}
 					<button
 						on:click={playAgain}
@@ -592,18 +603,13 @@
 				<div class="text-sm">{topic || 'GET THE MOST MONEY'}</div>
 				<TimeLeft />
 				<div class="text-xs">AGE {currentAge.label}</div>
-				<div class="mb-2 mt-1 text-sm font-bold">
-					{#if isMyTurn}
-						<span class="text-green-400">It's your turn!</span>
-					{:else}
-						<span class="text-yellow-300">Waiting for other players...</span>
-					{/if}
-				</div>
 				<!-- Drop Zones for current age -->
 				<div class="mt-2 flex gap-3">
 					{#each currentAge.data as card, i}
 						<div
-							class="flex h-32 w-24 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-white {!isMyTurn ? 'opacity-80' : ''}"
+							class="flex h-32 w-24 cursor-pointer items-center justify-center rounded-md border-2 border-dashed border-white {!isMyTurn
+								? 'opacity-80'
+								: ''}"
 							on:click={() => {
 								if (card) {
 									selectCard(card, i, 'dropzone', currentAgeIndex);
@@ -656,7 +662,10 @@
 			/>
 		</div>
 		<div class="flex w-full justify-between text-white">
-			<button on:click={() => getDeck()} class="{!isMyTurn ? 'opacity-60 cursor-not-allowed' : 'hover:scale-105'}">
+			<button
+				on:click={() => getDeck()}
+				class={!isMyTurn ? 'cursor-not-allowed opacity-60' : 'hover:scale-105'}
+			>
 				<img
 					src="../src/lib/assets/image/play/random-deck-button.svg"
 					alt="desk"
@@ -745,10 +754,12 @@
 					</div>
 				</div>
 				<div
-					class="relative flex h-[114px] w-[530px] cursor-pointer items-center justify-center gap-2 rounded-md border border-white bg-[#474848] {!isMyTurn ? 'opacity-80' : ''}"
+					class="relative flex h-[114px] w-[530px] cursor-pointer items-center justify-center gap-2 rounded-md border border-white bg-[#474848] {!isMyTurn
+						? 'opacity-80'
+						: ''}"
 					on:click={(e) => {
 						if (!isMyTurn) return;
-						
+
 						const target = e.target as HTMLElement;
 						if (selectedCard && !target.closest('.play-card-container')) {
 							if (
@@ -814,7 +825,9 @@
 						</div>
 					</div>
 					<div
-						class="relative w-[75px] cursor-pointer transition-transform duration-200 {!isMyTurn ? 'opacity-60 cursor-not-allowed' : ''}"
+						class="relative w-[75px] cursor-pointer transition-transform duration-200 {!isMyTurn
+							? 'cursor-not-allowed opacity-60'
+							: ''}"
 						on:click={trashCard}
 						class:scale-110={selectedCard !== null && isMyTurn}
 					>
@@ -837,6 +850,7 @@
 		{notification}
 	</div>
 {/if}
+
 <!-- <div class="text-xs">AGE {currentAge.label}</div>
 <div class="mb-2 mt-1 text-sm font-bold">
 	{#if isMyTurn}
