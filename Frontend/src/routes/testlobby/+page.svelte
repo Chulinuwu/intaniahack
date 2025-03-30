@@ -757,28 +757,42 @@
 		<div class="flex w-full justify-between">
 			<!-- Display player cards based on actual players -->
 			{#if players.length > 0 && allPlayerStats && allPlayerStats.length > 0}
-				<!-- First player card (can be host or first player) -->
-				<CompetiterCard
-					profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${players[0]}`}
-					playerName={players[0]}
-					money={allPlayerStats[0]?.money || 50}
-					happiness={allPlayerStats[0]?.happiness || 50}
-					knowledge={allPlayerStats[0]?.knowledge || 50}
-					relationship={allPlayerStats[0]?.relationship || 50}
-					isCurrentPlayer={players[0] === currentUsername}
-					isCurrentTurn={isMyTurn && players[0] === currentUsername}
-				/>
+			<!-- แสดงผู้เล่นคนแรกที่ไม่ใช่ตัวเอง -->
+			{#if players.filter(p => p !== currentUsername).length > 0}
+			  {@const otherPlayer1 = players.filter(p => p !== currentUsername)[0]}
+			  {@const playerIndex1 = players.indexOf(otherPlayer1)}
+			  <CompetiterCard
+				profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${otherPlayer1}`}
+				playerName={otherPlayer1}
+				money={allPlayerStats[playerIndex1]?.money || 50}
+				happiness={allPlayerStats[playerIndex1]?.happiness || 50}
+				knowledge={allPlayerStats[playerIndex1]?.knowledge || 50}
+				relationship={allPlayerStats[playerIndex1]?.relationship || 50}
+				isCurrentPlayer={otherPlayer1 === currentUsername} 
+				isCurrentTurn={isMyTurn && otherPlayer1 === currentUsername} 
+			  />
 			{:else}
-				<!-- Placeholder if no player data yet -->
-				<CompetiterCard
-					profileImage="../src/lib/assets/image/profile.jpg"
-					playerName="Player 1"
-					money={50}
-					happiness={50}
-					knowledge={50}
-					relationship={50}
-				/>
+			  <!-- Placeholder ถ้ายังไม่มีผู้เล่นอื่น -->
+			  <CompetiterCard
+				profileImage="../src/lib/assets/image/profile.jpg"
+				playerName="Player 1"
+				money={50}
+				happiness={50}
+				knowledge={50}
+				relationship={50}
+			  />
 			{/if}
+		  {:else}
+			<!-- Placeholder ถ้ายังไม่มีข้อมูลผู้เล่น -->
+			<CompetiterCard
+			  profileImage="../src/lib/assets/image/profile.jpg"
+			  playerName="Player 1"
+			  money={50}
+			  happiness={50}
+			  knowledge={50}
+			  relationship={50}
+			/>
+		  {/if}
 
 			<button
 				class="mt-10 hover:scale-110 disabled:opacity-50"
@@ -850,28 +864,41 @@
 			</button>
 
 			{#if players.length > 1 && allPlayerStats && allPlayerStats.length > 1}
-				<!-- Second player card (if exists) -->
-				<CompetiterCard
-					profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${players[1]}`}
-					playerName={players[1]}
-					money={allPlayerStats[1]?.money || 50}
-					happiness={allPlayerStats[1]?.happiness || 50}
-					knowledge={allPlayerStats[1]?.knowledge || 50}
-					relationship={allPlayerStats[1]?.relationship || 50}
-					isCurrentPlayer={players[1] === currentUsername}
-					isCurrentTurn={isMyTurn && players[1] === currentUsername}
-				/>
+			{#if players.filter(p => p !== currentUsername).length > 1}
+			  {@const otherPlayer2 = players.filter(p => p !== currentUsername)[1]}
+			  {@const playerIndex2 = players.indexOf(otherPlayer2)}
+			  <CompetiterCard
+				profileImage={`https://api.dicebear.com/7.x/bottts/svg?seed=${otherPlayer2}`}
+				playerName={otherPlayer2}
+				money={allPlayerStats[playerIndex2]?.money || 50}
+				happiness={allPlayerStats[playerIndex2]?.happiness || 50}
+				knowledge={allPlayerStats[playerIndex2]?.knowledge || 50}
+				relationship={allPlayerStats[playerIndex2]?.relationship || 50}
+				isCurrentPlayer={otherPlayer2 === currentUsername} 
+				isCurrentTurn={isMyTurn && otherPlayer2 === currentUsername} 
+			  />
 			{:else}
-				<!-- Placeholder if no second player yet -->
-				<CompetiterCard
-					profileImage="../src/lib/assets/image/profile.jpg"
-					playerName="Player 2"
-					money={50}
-					happiness={50}
-					knowledge={50}
-					relationship={50}
-				/>
+			  <!-- Placeholder ถ้ามีผู้เล่นอื่นแค่คนเดียว -->
+			  <CompetiterCard
+				profileImage="../src/lib/assets/image/profile.jpg"
+				playerName="Player 2"
+				money={50}
+				happiness={50}
+				knowledge={50}
+				relationship={50}
+			  />
 			{/if}
+		  {:else}
+			<!-- Placeholder ถ้ายังไม่มีผู้เล่นอื่น -->
+			<CompetiterCard
+			  profileImage="../src/lib/assets/image/profile.jpg"
+			  playerName="Player 2"
+			  money={50}
+			  happiness={50}
+			  knowledge={50}
+			  relationship={50}
+			/>
+		  {/if}
 		</div>
 
 		<div class="flex w-full justify-between text-white">
